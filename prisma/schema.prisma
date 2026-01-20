@@ -154,3 +154,15 @@ model ProjectTranslation {
   @@unique([projectId, locale])
   @@map("project_translations")
 }
+
+model Redirect {
+  id          Int      @id @default(autoincrement())
+  source      String   @unique
+  target      String
+  code        Int      @default(301) // 301 for permanent, 302 for temp
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("redirects")
+}

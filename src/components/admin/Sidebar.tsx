@@ -8,7 +8,8 @@ import {
     Activity,
     Settings,
     LogOut,
-    Briefcase
+    Briefcase,
+    Shuffle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
     { label: 'Portfolio', href: '/admin/projects', icon: Briefcase },
     { label: 'Events', href: '/admin/events', icon: Activity },
     { label: 'Webhooks', href: '/admin/webhooks', icon: Activity },
+    { label: 'Redirects', href: '/admin/redirects', icon: Shuffle },
     { label: 'Legal', href: '/admin/legal', icon: FileText }, // Reusing FileText or finding better icon
     { label: 'Settings', href: '/admin/settings', icon: Settings },
 ]

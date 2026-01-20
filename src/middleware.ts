@@ -2,8 +2,48 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { i18nConfig, locales } from './i18n/config'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const { pathname, search, hash } = request.nextUrl
+
+    // 0. Dynamic Redirect Checker (Database/API)
+    // Skip internal paths and admin checking (optimization)
+    if (
+        !pathname.startsWith('/_next') &&
+        !pathname.startsWith('/api') &&
+        !pathname.startsWith('/static') &&
+        !pathname.includes('.')
+    ) {
+        try {
+            // Internal fetch to lookup endpoint
+            // We need full URL for fetch in middleware
+            const lookupUrl = new URL('/api/redirects/lookup', request.url)
+            lookupUrl.searchParams.set('path', pathname)
+
+            const res = await fetch(lookupUrl, {
+                method: 'GET',
+                // Important: Cache handling or failing fast
+                headers: { 'Accept': 'application/json' },
+                cache: 'force-cache',
+                next: { revalidate: 60 } // Cache redirect lookup for 60s to reduce DB load
+            })
+
+            if (res.ok) {
+                const data = await res.json()
+                if (data.target) {
+                    const targetUrl = new URL(data.target, request.url)
+                    // Preserve search params if needed, or allow target to override
+                    // Merging search params:
+                    request.nextUrl.searchParams.forEach((val, key) => {
+                        targetUrl.searchParams.append(key, val)
+                    })
+                    return NextResponse.redirect(targetUrl, data.code || 301)
+                }
+            }
+        } catch (e) {
+            // Fail silently and proceed to normal routing
+            console.error('Middleware redirect lookup failed', e)
+        }
+    }
 
     // 1. Handle legacy /alcosi prefix (Strict 301)
     // Logic: Replace /alcosi/ with / or /alcosi with /
