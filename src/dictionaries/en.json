@@ -1,0 +1,254 @@
+{
+    "common": {
+        "get_started": "Get in Touch",
+        "learn_more": "Learn More",
+        "read_more": "Read More",
+        "view_case_study": "View Case Study",
+        "start_project": "Start a Project",
+        "contact_us": "Contact Us",
+        "back": "Back"
+    },
+    "nav": {
+        "home": "Home",
+        "services": "Services",
+        "blog": "Blog",
+        "portfolio": "Portfolio",
+        "contact": "Contact"
+    },
+    "home": {
+        "hero": {
+            "title": "We Build the Future of AI & Fintech",
+            "subtitle": "Alcosi Group empowers high-growth enterprises with scalable digital solutions, from intelligent banking platforms to decentralized infrastructure.",
+            "cta_primary": "Our Services",
+            "cta_secondary": "View Portfolio"
+        },
+        "features": {
+            "title": "Enterprise-Grade Solutions",
+            "subtitle": "Accelerate your digital transformation with our core competencies."
+        },
+        "cta": {
+            "title": "Ready to Scale?",
+            "subtitle": "Let's discuss how our AI and Fintech solutions can give you a competitive edge.",
+            "button": "Get a Free Consultation"
+        }
+    },
+    "footer": {
+        "rights": "All rights reserved.",
+        "company": "Company",
+        "legal": "Legal",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Service"
+    },
+    "contact": {
+        "title": "Let's Build Something Amazing",
+        "subtitle": "We'd love to hear about your project. Our team is ready to help you scale.",
+        "form": {
+            "name": "Full Name",
+            "email": "Email Address",
+            "subject": "Subject",
+            "message": "Message",
+            "submit": "Send Message",
+            "sending": "Sending...",
+            "success_title": "Message Sent!",
+            "success_desc": "Thank you for reaching out. We'll get back to you within 24 hours."
+        },
+        "info": {
+            "email": "Email",
+            "office": "Head Office",
+            "office_address": "Warsaw, Poland"
+        }
+    },
+    "portfolio": {
+        "title": "Selected Works",
+        "subtitle": "Showcasing our expertise in AI, Fintech, and Blockchain through real-world delivered value.",
+        "filters": {
+            "all": "All Projects",
+            "ai": "AI & ML",
+            "fintech": "Fintech",
+            "blockchain": "Blockchain"
+        },
+        "view_case_study": "View Case Study",
+        "items": [
+            {
+                "id": "1",
+                "title": "NeoBank Mobile App",
+                "category": "Fintech",
+                "description": "A next-generation banking application with AI-powered spending insights and biometric security.",
+                "imageUrl": "https://picsum.photos/seed/neobank/800/600",
+                "slug": "neobank-mobile-app",
+                "tags": [
+                    "Mobile App",
+                    "React Native",
+                    "Node.js"
+                ]
+            },
+            {
+                "id": "2",
+                "title": "Supply Chain Tracker",
+                "category": "Blockchain",
+                "description": "Decentralized logistical tracking system ensuring transparency from manufacturer to end consumer.",
+                "imageUrl": "https://picsum.photos/seed/supplychain/800/600",
+                "slug": "supply-chain-tracker",
+                "tags": [
+                    "Solidity",
+                    "Ethereum",
+                    "Web3.js"
+                ]
+            },
+            {
+                "id": "3",
+                "title": "AlgoTrading Bot",
+                "category": "AI",
+                "description": "High-frequency trading bot utilizing predictive machine learning models to analyze market trends.",
+                "imageUrl": "https://picsum.photos/seed/algotrading/800/600",
+                "slug": "algotrading-bot",
+                "tags": [
+                    "Python",
+                    "TensorFlow",
+                    "PostgreSQL"
+                ]
+            },
+            {
+                "id": "4",
+                "title": "Crypto Exchange Platform",
+                "category": "Fintech",
+                "description": "White-label cryptocurrency exchange with high liquidity and institutional-grade security.",
+                "imageUrl": "https://picsum.photos/seed/cryptoexchange/800/600",
+                "slug": "crypto-exchange-platform",
+                "tags": [
+                    "Next.js",
+                    "Go",
+                    "Microservices"
+                ]
+            },
+            {
+                "id": "5",
+                "title": "Identity Verification API",
+                "category": "AI",
+                "description": "KYC/AML solution using computer vision for document scanning and face matching.",
+                "imageUrl": "https://picsum.photos/seed/identity/800/600",
+                "slug": "identity-verification-api",
+                "tags": [
+                    "Computer Vision",
+                    "FastAPI",
+                    "Docker"
+                ]
+            },
+            {
+                "id": "6",
+                "title": "NFT Marketplace",
+                "category": "Blockchain",
+                "description": "A curated marketplace for digital art and collectibles with low gas fees.",
+                "imageUrl": "https://picsum.photos/seed/nft/800/600",
+                "slug": "nft-marketplace",
+                "tags": [
+                    "Next.js",
+                    "Smart Contracts",
+                    "IPFS"
+                ]
+            }
+        ]
+    },
+    "services": {
+        "title": "Engineering Digital Excellence",
+        "subtitle": "We build scalable, secure, and intelligent software systems that power the next generation of businesses.",
+        "items": {
+            "ai": {
+                "title": "Artificial Intelligence",
+                "description": "Transform your business with custom Machine Learning models, NLP, and Computer Vision."
+            },
+            "fintech": {
+                "title": "Fintech Solutions",
+                "description": "Secure banking software, ISO 20022 compliance, and high-load payment gateways."
+            },
+            "blockchain": {
+                "title": "Blockchain Engineering",
+                "description": "Smart contracts, dApps, and enterprise blockchain integration."
+            },
+            "audit": {
+                "title": "Security Audits",
+                "description": "Comprehensive security assessments for financial and decentralized systems."
+            }
+        },
+        "explore": "Explore Solution",
+        "cta": {
+            "title": "Not sure what you need?",
+            "button": "Book a Discovery Call"
+        },
+        "ai_page": {
+            "title": "Artificial Intelligence",
+            "subtitle": "Harness the power of machine learning to automate processes, gain insights, and create personalized experiences.",
+            "capabilities": {
+                "title": "Capabilities",
+                "desc": "We develop custom AI solutions that integrate seamlessly with your existing infrastructure. Whether you need to analyze massive datasets or verify user identities via biometrics, we have the expertise.",
+                "list": [
+                    "Natural Language Processing (NLP) & LLM Integration",
+                    "Computer Vision & Face Recognition",
+                    "Predictive Analytics & Forecasting Models",
+                    "AI-Powered Automation for Fintech",
+                    "Recommendation Engines",
+                    "Voice Assistants & Chatbots"
+                ],
+                "demo": "Request a Demo"
+            }
+        },
+        "fintech_page": {
+            "title": "Fintech Development",
+            "subtitle": "Secure, scalable, and compliant financial technology solutions for the modern banking era.",
+            "features": [
+                {
+                    "title": "ISO 20022 Compliance",
+                    "desc": "Modernize your payment data exchange with the global standard."
+                },
+                {
+                    "title": "Secure Payment Gateways",
+                    "desc": "PCI-DSS compliant payment processing implementations."
+                },
+                {
+                    "title": "E-Invoicing Systems",
+                    "desc": "Automated billing and reconciliation platforms."
+                },
+                {
+                    "title": "Fraud Detection",
+                    "desc": "Real-time transaction monitoring powered by AI."
+                }
+            ],
+            "security": {
+                "title": "Security First Approach",
+                "desc": "We understand that trust is the currency of fintech. Our development lifecycle integrates security audits at every stage, ensuring full compliance with GDPR, PCI-DSS, and PSD2.",
+                "button": "Discuss Your Security Needs"
+            }
+        },
+        "blockchain_page": {
+            "title": "Blockchain Engineering",
+            "subtitle": "Decentralize your infrastructure with secure smart contracts and robust Web3 applications.",
+            "features": {
+                "tokenization": {
+                    "title": "Tokenization",
+                    "desc": "Convert real-world assets into digital tokens. We help you launch STOs, NFTs, and utility tokens with proper compliance frameworks."
+                },
+                "smart_contracts": {
+                    "title": "Smart Contracts",
+                    "desc": "Solidity and Rust development for Ethereum, Solana, and Layer-2 networks. Rigorously tested to prevent vulnerabilities."
+                }
+            },
+            "infrastructure": {
+                "title": "Decentralized Infrastructure",
+                "desc": "Build on a foundation of trust. We architect solutions that are immutable, transparent, and resistant to censorship, empowering your users with true ownership of their data.",
+                "l1_l2": "Layer 1 & 2",
+                "l1_l2_desc": "Ethereum, Polygon, Solana, Avalanche",
+                "storage": "Storage & Identity",
+                "storage_desc": "IPFS, Filecoin, DID, SSI"
+            },
+            "button": "Start a Web3 Project"
+        }
+    },
+    "blog": {
+        "title": "Insights & News",
+        "subtitle": "Explore our latest thoughts on technology, innovation, and digital transformation.",
+        "read_article": "Read Article",
+        "no_articles": "No articles found in this language.",
+        "back_to_blog": "Back to Blog",
+        "draft": "Draft"
+    }
+}

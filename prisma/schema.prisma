@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Language {
+  en
+  pl
+  es
+  de
+  pt
+  ru
+}
+
+enum ArticleStatus {
+  draft
+  published
+  archived
+}
+
+model Article {
+  id           Int       @id @default(autoincrement())
+  status       ArticleStatus @default(draft)
+  publishedAt  DateTime? @map("published_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  translations ArticleTranslation[]
+  views        ArticleView[]
+
+  @@map("articles")
+}
+
+model ArticleView {
+  id        Int      @id @default(autoincrement())
+  articleId Int      @map("article_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("article_views")
+  @@index([createdAt])
+}
+
+model ArticleTranslation {
+  id              Int      @id @default(autoincrement())
+  articleId       Int      @map("article_id")
+  locale          Language
+  slug            String
+  title           String
+  excerpt         String?
+  contentHtml     String   @map("content_html") @db.Text
+  metaTitle       String?  @map("meta_title")
+  metaDescription String?  @map("meta_description")
+  ogImageUrl      String?  @map("og_image_url")
+  cardImageUrl    String?  @map("card_image_url")
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  article         Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@unique([locale, slug])
+  @@unique([articleId, locale])
+  @@map("article_translations")
+}
+model UrlAlias {
+  id        Int      @id @default(autoincrement())
+  fromPath  String   @unique @map("from_path") // Old URL path (e.g. /blog/old-slug)
+  toPath    String   @map("to_path")           // New Canonical path
+  httpCode  Int      @default(301) @map("http_code")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("url_aliases")
+}
+
+model WebhookLog {
+  id        String   @id @default(cuid())
+  provider  String   
+  method    String   
+  url       String
+  payload   Json     
+  status    Int      
+  response  Json?    
+  error     String?  
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("webhook_logs")
+}
+
+model GlobalSetting {
+  key       String   @id
+  value     String   @db.Text
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("global_settings")
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String   @db.Text
+  source    String?  
+  status    String   // "success" | "failed"
+  error     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("contact_submissions")
+}
+
+model Project {
+  id           Int      @id @default(autoincrement())
+  status       ArticleStatus @default(draft) // Reuse ArticleStatus
+  
+  // Images - Shared across all translations
+  imageUrl        String?  @map("image_url") // Card Image
+  coverImageUrl   String?  @map("cover_image_url") // Hero Image
+
+  publishedAt  DateTime? @map("published_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  translations ProjectTranslation[]
+  
+  @@map("projects")
+}
+
+model ProjectTranslation {
+  id              Int      @id @default(autoincrement())
+  projectId       Int      @map("project_id")
+  locale          Language
+  slug            String
+  title           String
+  description     String   @db.Text
+  contentHtml     String   @map("content_html") @db.Text
+  category        String   
+  tags            String[]
+  client          String?
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([locale, slug])
+  @@unique([projectId, locale])
+  @@map("project_translations")
+}

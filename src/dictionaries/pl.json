@@ -1,0 +1,254 @@
+{
+    "common": {
+        "get_started": "Skontaktuj się",
+        "learn_more": "Dowiedz się więcej",
+        "read_more": "Czytaj dalej",
+        "view_case_study": "Zobacz Case Study",
+        "start_project": "Rozpocznij Projekt",
+        "contact_us": "Kontakt",
+        "back": "Wróć"
+    },
+    "nav": {
+        "home": "Główna",
+        "services": "Usługi",
+        "blog": "Blog",
+        "portfolio": "Portfolio",
+        "contact": "Kontakt"
+    },
+    "home": {
+        "hero": {
+            "title": "Budujemy Przyszłość AI i Fintech",
+            "subtitle": "Alcosi Group wspiera szybko rozwijające się przedsiębiorstwa skalowalnymi rozwiązaniami cyfrowymi, od inteligentnych platform bankowych po zdecentralizowaną infrastrukturę.",
+            "cta_primary": "Nasze Usługi",
+            "cta_secondary": "Zobacz Portfolio"
+        },
+        "features": {
+            "title": "Rozwiązania Klasy Enterprise",
+            "subtitle": "Przyspiesz cyfrową transformację dzięki naszym kluczowym kompetencjom."
+        },
+        "cta": {
+            "title": "Gotowy na Skalowanie?",
+            "subtitle": "Porozmawiajmy o tym, jak nasze rozwiązania AI i Fintech mogą dać Ci przewagę konkurencyjną.",
+            "button": "Darmowa Konsultacja"
+        }
+    },
+    "footer": {
+        "rights": "Wszelkie prawa zastrzeżone.",
+        "company": "Firma",
+        "legal": "Prawne",
+        "privacy": "Polityka Prywatności",
+        "terms": "Regulamin"
+    },
+    "contact": {
+        "title": "Stwórzmy Coś Niesamowitego",
+        "subtitle": "Chętnie poznamy Twój projekt. Nasz zespół jest gotowy, aby pomóc Ci skalować biznes.",
+        "form": {
+            "name": "Imię i Nazwisko",
+            "email": "Adres Email",
+            "subject": "Temat",
+            "message": "Wiadomość",
+            "submit": "Wyślij Wiadomość",
+            "sending": "Wysyłanie...",
+            "success_title": "Wiadomość Wysłana!",
+            "success_desc": "Dziękujemy za kontakt. Odpowiemy w ciągu 24 godzin."
+        },
+        "info": {
+            "email": "Email",
+            "office": "Biuro Główne",
+            "office_address": "Warszawa, Polska"
+        }
+    },
+    "portfolio": {
+        "title": "Wybrane Realizacje",
+        "subtitle": "Prezentujemy nasze doświadczenie w AI, Fintech i Blockchain poprzez realną wartość dostarczoną klientom.",
+        "filters": {
+            "all": "Wszystkie Projekty",
+            "ai": "AI & ML",
+            "fintech": "Fintech",
+            "blockchain": "Blockchain"
+        },
+        "view_case_study": "Zobacz Case Study",
+        "items": [
+            {
+                "id": "1",
+                "title": "Aplikacja Mobilna NeoBank",
+                "category": "Fintech",
+                "description": "Aplikacja bankowa nowej generacji z analizą wydatków AI i zabezpieczeniami biometrycznymi.",
+                "imageUrl": "https://picsum.photos/seed/neobank/800/600",
+                "slug": "aplikacja-mobilna-neobank",
+                "tags": [
+                    "Mobile App",
+                    "React Native",
+                    "Node.js"
+                ]
+            },
+            {
+                "id": "2",
+                "title": "Śledzenie Łańcucha Dostaw",
+                "category": "Blockchain",
+                "description": "Zdecentralizowany system śledzenia logistycznego zapewniający przejrzystość od producenta do konsumenta.",
+                "imageUrl": "https://picsum.photos/seed/supplychain/800/600",
+                "slug": "sledzenie-lancucha-dostaw",
+                "tags": [
+                    "Solidity",
+                    "Ethereum",
+                    "Web3.js"
+                ]
+            },
+            {
+                "id": "3",
+                "title": "Bot Inwestycyjny AlgoTrading",
+                "category": "AI",
+                "description": "Bot handlowy o wysokiej częstotliwości wykorzystujący modele predykcyjne do analizy trendów rynkowych.",
+                "imageUrl": "https://picsum.photos/seed/algotrading/800/600",
+                "slug": "bot-algotradingowy",
+                "tags": [
+                    "Python",
+                    "TensorFlow",
+                    "PostgreSQL"
+                ]
+            },
+            {
+                "id": "4",
+                "title": "Platforma Wymiany Krypto",
+                "category": "Fintech",
+                "description": "Giełda kryptowalut typu white-label o wysokiej płynności i bezpieczeństwie instytucjonalnym.",
+                "imageUrl": "https://picsum.photos/seed/cryptoexchange/800/600",
+                "slug": "platforma-wymiany-krypto",
+                "tags": [
+                    "Next.js",
+                    "Go",
+                    "Microservices"
+                ]
+            },
+            {
+                "id": "5",
+                "title": "API Weryfikacji Tożsamości",
+                "category": "AI",
+                "description": "Rozwiązanie KYC/AML wykorzystujące wizję komputerową do skanowania dokumentów i dopasowywania twarzy.",
+                "imageUrl": "https://picsum.photos/seed/identity/800/600",
+                "slug": "api-weryfikacji-tozsamosci",
+                "tags": [
+                    "Computer Vision",
+                    "FastAPI",
+                    "Docker"
+                ]
+            },
+            {
+                "id": "6",
+                "title": "Rynek NFT",
+                "category": "Blockchain",
+                "description": "Wyselekcjonowany rynek sztuki cyfrowej i przedmiotów kolekcjonerskich z niskimi opłatami za gaz.",
+                "imageUrl": "https://picsum.photos/seed/nft/800/600",
+                "slug": "rynek-nft",
+                "tags": [
+                    "Next.js",
+                    "Smart Contracts",
+                    "IPFS"
+                ]
+            }
+        ]
+    },
+    "services": {
+        "title": "Inżynieria Cyfrowej Doskonałości",
+        "subtitle": "Tworzymy skalowalne, bezpieczne i inteligentne systemy, które napędzają biznes nowej generacji.",
+        "items": {
+            "ai": {
+                "title": "Sztuczna Inteligencja",
+                "description": "Przekształć swój biznes dzięki niestandardowym modelom ML, NLP i Wizji Komputerowej."
+            },
+            "fintech": {
+                "title": "Rozwiązania Fintech",
+                "description": "Bezpieczne oprogramowanie bankowe, zgodność z ISO 20022 i wysokowydajne bramki płatnicze."
+            },
+            "blockchain": {
+                "title": "Inżynieria Blockchain",
+                "description": "Inteligentne kontrakty, dApps i integracja blockchain w przedsiębiorstwach."
+            },
+            "audit": {
+                "title": "Audyty Bezpieczeństwa",
+                "description": "Kompleksowe oceny bezpieczeństwa dla systemów finansowych i zdecentralizowanych."
+            }
+        },
+        "explore": "Poznaj Rozwiązanie",
+        "cta": {
+            "title": "Nie wiesz czego potrzebujesz?",
+            "button": "Umów konsultację"
+        },
+        "ai_page": {
+            "title": "Sztuczna Inteligencja",
+            "subtitle": "Wykorzystaj moc uczenia maszynowego do automatyzacji procesów i personalizacji doświadczeń.",
+            "capabilities": {
+                "title": "Możliwości",
+                "desc": "Tworzymy niestandardowe rozwiązania AI, które integrują się bezproblemowo z Twoją infrastrukturą.",
+                "list": [
+                    "Przetwarzanie Języka Naturalnego (NLP) i LLM",
+                    "Wizja Komputerowa i Rozpoznawanie Twarzy",
+                    "Analityka Predykcyjna i Prognozowanie",
+                    "Automatyzacja AI dla Fintech",
+                    "Silniki Rekomendacji",
+                    "Asystenci Głosowi i Chatboty"
+                ],
+                "demo": "Zamów Demo"
+            }
+        },
+        "fintech_page": {
+            "title": "Rozwój Fintech",
+            "subtitle": "Bezpieczne, skalowalne i zgodne z przepisami rozwiązania finansowe.",
+            "features": [
+                {
+                    "title": "Zgodność ISO 20022",
+                    "desc": "Zmodernizuj wymianę danych płatniczych zgodnie ze światowym standardem."
+                },
+                {
+                    "title": "Bezpieczne Bramki Płatnicze",
+                    "desc": "Wdrożenia zgodne z PCI-DSS."
+                },
+                {
+                    "title": "Systemy E-Fakturowania",
+                    "desc": "Zautomatyzowane platformy rozliczeniowe."
+                },
+                {
+                    "title": "Wykrywanie Oszustw",
+                    "desc": "Monitorowanie transakcji w czasie rzeczywistym wspierane AI."
+                }
+            ],
+            "security": {
+                "title": "Bezpieczeństwo Przede Wszystkim",
+                "desc": "Rozumiemy, że zaufanie to waluta fintechu. Nasz proces rozwoju integruje audyty na każdym etapie (RODO, PSD2).",
+                "button": "Omów Potrzeby Bezpieczeństwa"
+            }
+        },
+        "blockchain_page": {
+            "title": "Inżynieria Blockchain",
+            "subtitle": "Zdecentralizuj swoją infrastrukturę dzięki bezpiecznym kontraktom i aplikacjom Web3.",
+            "features": {
+                "tokenization": {
+                    "title": "Tokenizacja",
+                    "desc": "Konwertuj aktywa rzeczywiste na cyfrowe tokeny (STO, NFT)."
+                },
+                "smart_contracts": {
+                    "title": "Smart Contracts",
+                    "desc": "Rozwój w Solidity i Rust dla Ethereum, Solana i Layer-2."
+                }
+            },
+            "infrastructure": {
+                "title": "Zdecentralizowana Infrastruktura",
+                "desc": "Buduj na fundamencie zaufania. Tworzymy rozwiązania odporne na cenzurę i transparentne.",
+                "l1_l2": "Warstwa 1 i 2",
+                "l1_l2_desc": "Ethereum, Polygon, Solana, Avalanche",
+                "storage": "Przechowywanie i Tożsamość",
+                "storage_desc": "IPFS, Filecoin, DID, SSI"
+            },
+            "button": "Rozpocznij Projekt Web3"
+        }
+    },
+    "blog": {
+        "title": "Spostrzeżenia i Aktualności",
+        "subtitle": "Poznaj nasze najnowsze przemyślenia na temat technologii, innowacji i transformacji cyfrowej.",
+        "read_article": "Czytaj Artykuł",
+        "no_articles": "Nie znaleziono artykułów w tym języku.",
+        "back_to_blog": "Powrót do Bloga",
+        "draft": "Szkic"
+    }
+}
