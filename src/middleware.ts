@@ -11,7 +11,8 @@ export async function middleware(request: NextRequest) {
         !pathname.startsWith('/_next') &&
         !pathname.startsWith('/api') &&
         !pathname.startsWith('/static') &&
-        !pathname.includes('.')
+        // Only exclude specific static asset extensions, allowing legacy .pdf, .html etc
+        !/\.(png|jpg|jpeg|gif|webp|svg|ico|css|js|woff|woff2|ttf|eot)$/i.test(pathname)
     ) {
         try {
             // Internal fetch to lookup endpoint

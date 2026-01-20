@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Plus, Pencil, Trash2, Search, Shuffle } from 'lucide-react'
+import { Loader2, Plus, Pencil, Trash2, Search, Shuffle, ExternalLink } from 'lucide-react'
 // Removed invalid Dialog imports, using custom overlay instead
 
 // Imports removed
@@ -41,7 +41,12 @@ export default function RedirectsPage() {
         try {
             const res = await fetch('/api/admin/redirects')
             const data = await res.json()
-            setRedirects(data)
+            if (res.ok && Array.isArray(data)) {
+                setRedirects(data)
+            } else {
+                console.error('Expected array, got:', data)
+                setRedirects([])
+            }
         } catch (error) {
             console.error('Failed to fetch', error)
         } finally {
@@ -208,7 +213,20 @@ export default function RedirectsPage() {
                             ) : (
                                 filtered.map(r => (
                                     <TableRow key={r.id} className={!r.isActive ? 'opacity-60' : ''}>
-                                        <TableCell className="font-mono text-sm">{r.source}</TableCell>
+                                        <TableCell className="font-mono text-sm">
+                                            <div className="flex items-center gap-2 group">
+                                                <span>{r.source}</span>
+                                                <a
+                                                    href={r.source}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-primary"
+                                                    title="Test Redirect"
+                                                >
+                                                    <ExternalLink className="size-3" />
+                                                </a>
+                                            </div>
+                                        </TableCell>
                                         <TableCell><ArrowRight /></TableCell>
                                         <TableCell className="font-mono text-sm">{r.target}</TableCell>
                                         <TableCell><Badge variant="outline">{r.code}</Badge></TableCell>
