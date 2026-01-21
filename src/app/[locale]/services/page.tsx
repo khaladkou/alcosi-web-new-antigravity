@@ -5,9 +5,28 @@ import { ArrowRight, BrainCircuit, Wallet, Blocks, ShieldCheck } from 'lucide-re
 import { getDictionary } from '@/i18n/get-dictionary'
 import { Locale } from '@/i18n/config'
 
-export const metadata = {
-    title: 'Our Services - Alcosi Group',
-    description: 'AI, Fintech, and Blockchain development services tailored for enterprise growth.',
+import { JsonLd } from '@/components/seo/JsonLd'
+import { locales } from '@/i18n/config'
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params
+    const t = await getDictionary(locale as Locale)
+
+    const alternates: Record<string, string> = {}
+    locales.forEach(l => {
+        alternates[l] = `${BASE_URL}/${l}/services`
+    })
+
+    return {
+        title: 'Our Services - Alcosi Group',
+        description: 'AI, Fintech, and Blockchain development services tailored for enterprise growth.',
+        alternates: {
+            canonical: `${BASE_URL}/${locale}/services`,
+            languages: alternates
+        }
+    }
 }
 
 const serviceIcons = {
@@ -32,6 +51,22 @@ export default async function ServicesPage({ params }: { params: Promise<{ local
 
     return (
         <>
+            <JsonLd data={{
+                '@context': 'https://schema.org',
+                '@type': 'CollectionPage',
+                name: 'Our Services',
+                description: 'AI, Fintech, and Blockchain development services tailored for enterprise growth.',
+                url: `${BASE_URL}/${locale}/services`,
+                mainEntity: {
+                    '@type': 'ItemList',
+                    itemListElement: [
+                        { '@type': 'ListItem', position: 1, name: 'AI Solutions', url: `${BASE_URL}/${locale}/services/ai` },
+                        { '@type': 'ListItem', position: 2, name: 'Fintech Development', url: `${BASE_URL}/${locale}/services/fintech` },
+                        { '@type': 'ListItem', position: 3, name: 'Blockchain Integration', url: `${BASE_URL}/${locale}/services/blockchain` }
+                    ]
+                }
+            }} />
+
             <ServiceHero
                 title={t.services.title}
                 subtitle={t.services.subtitle}

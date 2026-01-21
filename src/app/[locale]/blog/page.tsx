@@ -3,17 +3,29 @@ import { getLatestArticles } from '@/lib/articles'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Calendar } from 'lucide-react'
 import { getDictionary } from '@/i18n/get-dictionary'
-import { Locale } from '@/i18n/config'
+import { Locale, locales } from '@/i18n/config'
 import Image from 'next/image'
 import { Metadata } from 'next'
+import { JsonLd } from '@/components/seo/JsonLd'
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
     const { locale } = await params
     const t = await getDictionary(locale as Locale)
 
+    const alternates: Record<string, string> = {}
+    locales.forEach(l => {
+        alternates[l] = `${BASE_URL}/${l}/blog`
+    })
+
     return {
         title: `${t.blog.title} | Alcosi Group`,
         description: t.blog.subtitle,
+        alternates: {
+            canonical: `${BASE_URL}/${locale}/blog`,
+            languages: alternates
+        }
     }
 }
 
@@ -24,6 +36,13 @@ export default async function BlogPage({ params }: { params: Promise<{ locale: s
 
     return (
         <div className="pt-32 pb-20">
+            <JsonLd data={{
+                '@context': 'https://schema.org',
+                '@type': 'Blog',
+                name: t.blog.title,
+                description: t.blog.subtitle,
+                url: `${BASE_URL}/${locale}/blog`
+            }} />
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
                     <h1 className="text-4xl md:text-6xl font-bold font-heading mb-6">{t.blog.title}</h1>

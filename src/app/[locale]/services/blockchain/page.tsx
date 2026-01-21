@@ -8,11 +8,27 @@ import Image from 'next/image'
 import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import { BreadcrumbJsonLd } from '@/components/seo/BreadcrumbJsonLd'
 
+import { JsonLd } from '@/components/seo/JsonLd'
+import { locales } from '@/i18n/config'
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
 
-export const metadata = {
-    title: 'Blockchain Engineering - Alcosi Group',
-    description: 'Decentralized Application (dApp) development and Smart Contract auditing.',
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params
+
+    const alternates: Record<string, string> = {}
+    locales.forEach(l => {
+        alternates[l] = `${BASE_URL}/${l}/services/blockchain`
+    })
+
+    return {
+        title: 'Blockchain Engineering - Alcosi Group',
+        description: 'Decentralized Application (dApp) development and Smart Contract auditing.',
+        alternates: {
+            canonical: `${BASE_URL}/${locale}/services/blockchain`,
+            languages: alternates
+        }
+    }
 }
 
 export default async function BlockchainServicePage({ params }: { params: Promise<{ locale: string }> }) {
@@ -34,6 +50,19 @@ export default async function BlockchainServicePage({ params }: { params: Promis
     return (
         <>
             <BreadcrumbJsonLd items={jsonLdItems} />
+            <JsonLd data={{
+                '@context': 'https://schema.org',
+                '@type': 'Service',
+                name: 'Blockchain Engineering',
+                description: 'Decentralized Application (dApp) development and Smart Contract auditing.',
+                provider: {
+                    '@type': 'Organization',
+                    name: 'Alcosi Group',
+                    url: BASE_URL
+                },
+                areaServed: 'Worldwide',
+                url: `${BASE_URL}/${locale}/services/blockchain`
+            }} />
             <ServiceHero
                 title={page.title}
                 subtitle={page.subtitle}

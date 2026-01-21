@@ -8,11 +8,30 @@ import Image from 'next/image'
 import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import { BreadcrumbJsonLd } from '@/components/seo/BreadcrumbJsonLd'
 
+import { JsonLd } from '@/components/seo/JsonLd'
+import { locales } from '@/i18n/config'
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
 
-export const metadata = {
-    title: 'Fintech Solutions - Alcosi Group',
-    description: 'Secure, compliant financial software development: ISO 20022, Payment Gateways, and Banking Apps.',
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params
+
+    // In a real app we might fetch titles from dictionary, but for now hardcoded fallback is fine or use getDictionary inside
+    // const t = await getDictionary(locale as Locale) 
+
+    const alternates: Record<string, string> = {}
+    locales.forEach(l => {
+        alternates[l] = `${BASE_URL}/${l}/services/fintech`
+    })
+
+    return {
+        title: 'Fintech Solutions - Alcosi Group',
+        description: 'Secure, compliant financial software development: ISO 20022, Payment Gateways, and Banking Apps.',
+        alternates: {
+            canonical: `${BASE_URL}/${locale}/services/fintech`,
+            languages: alternates
+        }
+    }
 }
 
 const icons = [Globe, CreditCard, Banknote, Shield]
@@ -36,6 +55,19 @@ export default async function FintechServicePage({ params }: { params: Promise<{
     return (
         <>
             <BreadcrumbJsonLd items={jsonLdItems} />
+            <JsonLd data={{
+                '@context': 'https://schema.org',
+                '@type': 'FinancialProduct', // More specific than Service
+                name: 'Fintech Solutions',
+                description: 'Secure, compliant financial software development: ISO 20022, Payment Gateways, and Banking Apps.',
+                provider: {
+                    '@type': 'Organization',
+                    name: 'Alcosi Group',
+                    url: BASE_URL
+                },
+                areaServed: 'Worldwide',
+                url: `${BASE_URL}/${locale}/services/fintech`
+            }} />
             <ServiceHero
                 title={page.title}
                 subtitle={page.subtitle}

@@ -8,11 +8,30 @@ import Image from 'next/image'
 import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import { BreadcrumbJsonLd } from '@/components/seo/BreadcrumbJsonLd'
 
+import { JsonLd } from '@/components/seo/JsonLd'
+import { locales } from '@/i18n/config'
+
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
 
-export const metadata = {
-    title: 'AI Solutions - Alcosi Group',
-    description: 'Enterprise AI development: Computer Vision, NLP, and Predictive Analytics.',
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params
+
+    // In a real app we might fetch titles from dictionary, but for now hardcoded fallback is fine or use getDictionary inside
+    // const t = await getDictionary(locale as Locale) 
+
+    const alternates: Record<string, string> = {}
+    locales.forEach(l => {
+        alternates[l] = `${BASE_URL}/${l}/services/ai`
+    })
+
+    return {
+        title: 'AI Solutions - Alcosi Group',
+        description: 'Enterprise AI development: Computer Vision, NLP, and Predictive Analytics.',
+        alternates: {
+            canonical: `${BASE_URL}/${locale}/services/ai`,
+            languages: alternates
+        }
+    }
 }
 
 export default async function AIServicePage({ params }: { params: Promise<{ locale: string }> }) {
@@ -34,6 +53,19 @@ export default async function AIServicePage({ params }: { params: Promise<{ loca
     return (
         <>
             <BreadcrumbJsonLd items={jsonLdItems} />
+            <JsonLd data={{
+                '@context': 'https://schema.org',
+                '@type': 'Service', // or ProfessionalService
+                name: 'AI Solutions',
+                description: 'Enterprise AI development: Computer Vision, NLP, and Predictive Analytics.',
+                provider: {
+                    '@type': 'Organization',
+                    name: 'Alcosi Group',
+                    url: BASE_URL
+                },
+                areaServed: 'Worldwide',
+                url: `${BASE_URL}/${locale}/services/ai`
+            }} />
             <ServiceHero
                 title={page.title}
                 subtitle={page.subtitle}
