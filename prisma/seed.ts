@@ -1,284 +1,234 @@
 import { PrismaClient } from '@prisma/client'
-import fs from 'fs'
-import path from 'path'
 
-const prisma = new PrismaClient({})
+const prisma = new PrismaClient()
+
+// === DATA ===
+
+const redirects = [
+    // Core Pages
+    { source: '/srv-ai', target: '/services/ai' },
+    { source: '/srv-fintech', target: '/services/fintech' },
+    { source: '/portfolio', target: '/portfolio' },
+    { source: '/contact', target: '/contact' },
+
+    // Blog / content
+    { source: '/blog', target: '/blog' },
+    { source: '/blog/ai', target: '/blog' },
+    { source: '/blog/fintech', target: '/blog' },
+    { source: '/blog/other', target: '/blog' },
+
+    // Specific Blog Posts
+    { source: '/blog/post/alcosi-group-developed-cloud-based-open-source-management-platform', target: '/blog' },
+    { source: '/blog/post/unlock-power-facial-recognition-your-business', target: '/blog' },
+    { source: '/blog/post/hidden-benefits-digital-wallets', target: '/blog' },
+    { source: '/blog/post/iso-20022-harmonizing-financial-data-exchange-worldwide', target: '/blog' },
+    { source: '/blog/post/loyalty-program-development-financial-and-banking-organization', target: '/blog' },
+    { source: '/blog/post/qr-payment-e-invoicing-service', target: '/blog' },
+
+    // Specific Portfolio Items
+    { source: '/portfolio/ai/Face_&_form_recognizer', target: '/portfolio' },
+    { source: '/portfolio/ai/loyalty_service_based_of_face_recognition', target: '/portfolio' },
+    { source: '/portfolio/fintech/qr-payment_e-invoicing_service', target: '/portfolio' },
+    { source: '/portfolio/fintech/trust_management_software', target: '/portfolio' },
+    { source: '/portfolio/blockchain/web2_&_web3_e-store', target: '/portfolio' },
+
+    // Docs
+    { source: '/Privacy_Policy.pdf', target: '/privacy-policy' },
+]
+
+const projects = [
+    {
+        title: "NeoBank Mobile App",
+        category: "Fintech",
+        description: "A next-generation banking application with AI-powered spending insights and biometric security.",
+        imageUrl: "https://picsum.photos/seed/neobank/800/600",
+        slug: "neobank-mobile-app",
+        tags: ["Mobile App", "React Native", "Node.js"]
+    },
+    {
+        title: "Supply Chain Tracker",
+        category: "Blockchain",
+        description: "Decentralized logistical tracking system ensuring transparency from manufacturer to end consumer.",
+        imageUrl: "https://picsum.photos/seed/supplychain/800/600",
+        slug: "supply-chain-tracker",
+        tags: ["Solidity", "Ethereum", "Web3.js"]
+    },
+    {
+        title: "AlgoTrading Bot",
+        category: "AI",
+        description: "High-frequency trading bot utilizing predictive machine learning models to analyze market trends.",
+        imageUrl: "https://picsum.photos/seed/algotrading/800/600",
+        slug: "algotrading-bot",
+        tags: ["Python", "TensorFlow", "PostgreSQL"]
+    },
+    {
+        title: "Crypto Exchange Platform",
+        category: "Fintech",
+        description: "White-label cryptocurrency exchange with high liquidity and institutional-grade security.",
+        imageUrl: "https://picsum.photos/seed/cryptoexchange/800/600",
+        slug: "crypto-exchange-platform",
+        tags: ["Next.js", "Go", "Microservices"]
+    },
+    {
+        title: "Identity Verification API",
+        category: "AI",
+        description: "KYC/AML solution using computer vision for document scanning and face matching.",
+        imageUrl: "https://picsum.photos/seed/identity/800/600",
+        slug: "identity-verification-api",
+        tags: ["Computer Vision", "FastAPI", "Docker"]
+    },
+    {
+        title: "NFT Marketplace",
+        category: "Blockchain",
+        description: "A curated marketplace for digital art and collectibles with low gas fees.",
+        imageUrl: "https://picsum.photos/seed/nft/800/600",
+        slug: "nft-marketplace",
+        tags: ["Next.js", "Smart Contracts", "IPFS"]
+    }
+]
+
+const richContent = `
+    <p class="lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+    
+    <h2>Key Takeaways</h2>
+    <ul>
+        <li>Understanding the core principles of the technology.</li>
+        <li>Analyzing the market impact and future trends.</li>
+        <li>Exploring real-world use cases and success stories.</li>
+    </ul>
+
+    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+    <h2>Detailed Analysis</h2>
+    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</p>
+    
+    <div class="my-8">
+        <img src="https://picsum.photos/seed/content-1/800/400" alt="Detailed Analysis Chart" class="rounded-xl w-full shadow-lg" />
+        <p class="text-sm text-center text-muted-foreground mt-2">Figure 1: Market Analysis 2026</p>
+    </div>
+
+    <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+`
+
+const sampleArticles = [
+    {
+        status: 'published',
+        translations: [
+            {
+                locale: 'en',
+                slug: 'ai-transforming-fintech',
+                title: 'How AI is Transforming Fintech in 2026',
+                excerpt: 'Artificial Intelligence is reshaping the financial landscape, from fraud detection to personalized banking.',
+                content: `
+                    <p class="lead">The integration of Artificial Intelligence (AI) in financial technology is no longer a trend—it is a necessity. As we move into 2026, financial institutions that fail to adapt risk obsolescence.</p>
+                    <img src="https://picsum.photos/seed/fintech-ai/800/400" alt="AI in Fintech" class="rounded-xl w-full my-8 shadow-lg" />
+                    <h2>Predictive Analytics and Personalization</h2>
+                    <p>One of the most significant impacts of AI is in predictive analytics. By analyzing vast amounts of data, AI algorithms can predict customer behavior with unprecedented accuracy.</p>
+                    <ul>
+                        <li>Real-time fraud detection using machine learning models.</li>
+                        <li>Hyper-personalized investment advice based on spending habits.</li>
+                        <li>Automated customer service via advanced NLP chatbots.</li>
+                    </ul>
+                    <p>This shift allows banks to offer services that feel tailor-made for each individual, increasing customer loyalty and retention.</p>
+                `,
+                ogImageUrl: 'https://picsum.photos/seed/fintech-ai/1200/630'
+            },
+            // Other languages omitted for brevity in seed, but easy to add back if needed. 
+            // For a clean handover, English is sufficient to demonstrate structure.
+        ]
+    },
+    {
+        status: 'published',
+        translations: [
+            {
+                locale: 'en',
+                slug: 'blockchain-for-enterprise',
+                title: 'Why Enterprise Blockchain Matters',
+                excerpt: 'Decentralized ledgers are solving complex supply chain and verification problems for major corporations.',
+                content: richContent,
+                ogImageUrl: 'https://picsum.photos/seed/blockchain-ent/1200/630'
+            }
+        ]
+    },
+    {
+        status: 'published',
+        translations: [
+            {
+                locale: 'en',
+                slug: 'iso-20022-guide',
+                title: 'A Comprehensive Guide to ISO 20022',
+                excerpt: 'Understanding the new global standard for payments and messaging.',
+                content: richContent,
+                ogImageUrl: 'https://picsum.photos/seed/iso20022/1200/630'
+            }
+        ]
+    }
+]
+
+// === MAIN ===
 
 async function main() {
-    const legacyUrlsPath = path.join(process.cwd(), 'docs', 'legacy_urls.json')
-    const legacyUrls: string[] = JSON.parse(fs.readFileSync(legacyUrlsPath, 'utf8'))
+    console.log('🌱 Starting Database Seed...')
 
-    console.log(`Found ${legacyUrls.length} legacy URLs.`)
-
-    for (const url of legacyUrls) {
-        try {
-            const urlObj = new URL(url)
-            let fromPath = urlObj.pathname
-            // Use raw pathname, but ensure it's decoded if needed. 
-            // legacy URLs might be like /portfolio/ai/Face_%26_form_recognizer
-            // decodeURIComponent might be needed for the DB to match incoming requests.
-
-            // Normalize: ensure trailing slash consistency based on strategy. 
-            // Strategy says: "MUST: единая политика... например, без trailing slash".
-            // We will store fromPath exactly as it might come, or normalize?
-            // Better to store normalized "from" and let middleware normalize request before check.
-
-            if (fromPath.length > 1 && fromPath.endsWith('/')) {
-                fromPath = fromPath.slice(0, -1)
-            }
-
-            // Initial Assumption: New URL is same as Old URL (normalized)
-            // If old URL had /alcosi prefix, remove it for destination.
-            let toPath = fromPath
-            if (toPath.startsWith('/alcosi/')) {
-                toPath = toPath.replace('/alcosi/', '/')
-            } else if (toPath === '/alcosi') {
-                toPath = '/'
-            }
-
-            try {
-                await prisma.urlAlias.upsert({
-                    where: { fromPath },
-                    update: {},
-                    create: {
-                        fromPath,
-                        toPath,
-                        httpCode: 301
-                    }
-                })
-                console.log(`Seeded alias: ${fromPath} -> ${toPath}`)
-            } catch (e) {
-                console.error(`Failed to seed ${fromPath}:`, e)
-            }
-
-        } catch (e) {
-            console.error(`Invalid URL in list: ${url}`)
-        }
-    }
-    // Seed Articles
-    console.log('Seeding Articles...')
-    // clean up existing articles to force update content
+    // 1. Clean Database
+    console.log('Removing old data...')
+    await prisma.redirect.deleteMany({})
+    await prisma.projectTranslation.deleteMany({})
+    await prisma.project.deleteMany({})
     await prisma.articleTranslation.deleteMany({})
     await prisma.article.deleteMany({})
+    // Optionally clean UrlAlias if we used it, but we prefer Redirect now. 
+    // await prisma.urlAlias.deleteMany({}) 
+    console.log('Database cleared.')
 
-    const richContent = `
-        <p class="lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        
-        <h2>Key Takeaways</h2>
-        <ul>
-            <li>Understanding the core principles of the technology.</li>
-            <li>Analyzing the market impact and future trends.</li>
-            <li>Exploring real-world use cases and success stories.</li>
-        </ul>
+    // 2. Seed Redirects
+    console.log(`Seeding ${redirects.length} redirects...`)
+    for (const r of redirects) {
+        // Normalize source
+        const normalizedSource = r.source.startsWith('https://alcosi.com')
+            ? r.source.replace('https://alcosi.com', '')
+            : r.source
 
-        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        // Prevent self-loops
+        if (normalizedSource === r.target) continue
 
-        <h2>Detailed Analysis</h2>
-        <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</p>
-        
-        <div class="my-8">
-            <img src="https://picsum.photos/seed/content-1/800/400" alt="Detailed Analysis Chart" class="rounded-xl w-full shadow-lg" />
-            <p class="text-sm text-center text-muted-foreground mt-2">Figure 1: Market Analysis 2026</p>
-        </div>
+        await prisma.redirect.create({
+            data: {
+                source: normalizedSource,
+                target: r.target,
+                code: 301,
+                isActive: true
+            }
+        })
+    }
 
-        <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
-    `
-
-    const sampleArticles = [
-        {
-            status: 'published',
-            translations: [
-                {
-                    locale: 'en',
-                    slug: 'ai-transforming-fintech',
-                    title: 'How AI is Transforming Fintech in 2026',
-                    excerpt: 'Artificial Intelligence is reshaping the financial landscape, from fraud detection to personalized banking.',
-                    content: `
-                        <p class="lead">The integration of Artificial Intelligence (AI) in financial technology is no longer a trend—it is a necessity. As we move into 2026, financial institutions that fail to adapt risk obsolescence.</p>
-                        <img src="https://picsum.photos/seed/fintech-ai/800/400" alt="AI in Fintech" class="rounded-xl w-full my-8 shadow-lg" />
-                        <h2>Predictive Analytics and Personalization</h2>
-                        <p>One of the most significant impacts of AI is in predictive analytics. By analyzing vast amounts of data, AI algorithms can predict customer behavior with unprecedented accuracy.</p>
-                        <ul>
-                            <li>Real-time fraud detection using machine learning models.</li>
-                            <li>Hyper-personalized investment advice based on spending habits.</li>
-                            <li>Automated customer service via advanced NLP chatbots.</li>
-                        </ul>
-                        <p>This shift allows banks to offer services that feel tailor-made for each individual, increasing customer loyalty and retention.</p>
-                    `,
-                    ogImageUrl: 'https://picsum.photos/seed/fintech-ai/1200/630'
-                },
-                {
-                    locale: 'pl',
-                    slug: 'ai-transformuje-fintech',
-                    title: 'Jak AI Zmienia Fintech w 2026',
-                    excerpt: 'Sztuczna inteligencja zmienia krajobraz finansowy, od wykrywania oszustw po spersonalizowaną bankowość.',
-                    content: `
-                        <p class="lead">Integracja sztucznej inteligencji (AI) w technologii finansowej nie jest już trendem — jest koniecznością. Wchodząc w rok 2026, instytucje finansowe, które nie dostosują się do zmian, ryzykują przestarzałość.</p>
-                        <img src="https://picsum.photos/seed/fintech-ai/800/400" alt="AI w Fintech" class="rounded-xl w-full my-8 shadow-lg" />
-                        <h2>Analityka predykcyjna i personalizacja</h2>
-                        <p>Jednym z najważniejszych wpływów AI jest analityka predykcyjna. Analizując ogromne ilości danych, algorytmy AI mogą przewidywać zachowania klientów z niespotykaną dotąd dokładnością.</p>
-                        <ul>
-                            <li>Wykrywanie oszustw w czasie rzeczywistym przy użyciu modeli uczenia maszynowego.</li>
-                            <li>Hiper-spersonalizowane porady inwestycyjne oparte na nawykach wydatkowych.</li>
-                            <li>Zautomatyzowana obsługa klienta za pomocą zaawansowanych chatbotów NLP.</li>
-                        </ul>
-                        <p>Ta zmiana pozwala bankom oferować usługi, które wydają się być szyte na miarę dla każdego klienta, zwiększając lojalność i retencję.</p>
-                    `,
-                    ogImageUrl: 'https://picsum.photos/seed/fintech-ai/1200/630'
-                },
-                {
-                    locale: 'es',
-                    slug: 'ia-transformando-fintech',
-                    title: 'Cómo la IA está transformando Fintech en 2026',
-                    excerpt: 'La Inteligencia Artificial está remodelando el panorama financiero.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/fintech-ai/1200/630'
-                },
-                {
-                    locale: 'de',
-                    slug: 'ki-transformiert-fintech',
-                    title: 'Wie KI Fintech im Jahr 2026 verändert',
-                    excerpt: 'Künstliche Intelligenz gestaltet die Finanzlandschaft neu.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/fintech-ai/1200/630'
-                },
-                {
-                    locale: 'pt',
-                    slug: 'ia-transformando-fintech-pt',
-                    title: 'Como a IA está transformando Fintech em 2026',
-                    excerpt: 'A Inteligência Artificial está remodelando o cenário financeiro.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/fintech-ai/1200/630'
-                },
-                {
-                    locale: 'ru',
-                    slug: 'ii-transformiruet-fintech',
-                    title: 'Как ИИ трансформирует Финтех в 2026',
-                    excerpt: 'Искусственный интеллект меняет финансовый ландшафт.',
-                    content: `
-                         <p class="lead">Интеграция искусственного интеллекта (ИИ) в финансовые технологии больше не является трендом — это необходимость.</p>
-                         <img src="https://picsum.photos/seed/fintech-ai/800/400" alt="ИИ в Финтехе" class="rounded-xl w-full my-8 shadow-lg" />
-                         <h2>Предиктивная аналитика и персонализация</h2>
-                         <p>Одной из наиболее значимых областей влияния ИИ является предиктивная аналитика. Анализируя огромные объемы данных, алгоритмы могут предсказывать поведение клиентов.</p>
-                         <ul>
-                            <li>Обнаружение мошенничества в реальном времени.</li>
-                            <li>Персонализированные инвестиционные советы.</li>
-                            <li>Автоматизация поддержки клиентов.</li>
-                         </ul>
-                    `,
-                    ogImageUrl: 'https://picsum.photos/seed/fintech-ai/1200/630'
+    // 3. Seed Projects
+    console.log(`Seeding ${projects.length} portfolio projects...`)
+    for (const p of projects) {
+        await prisma.project.create({
+            data: {
+                status: 'published',
+                publishedAt: new Date(),
+                imageUrl: p.imageUrl,
+                coverImageUrl: p.imageUrl,
+                translations: {
+                    create: {
+                        locale: 'en',
+                        title: p.title,
+                        slug: p.slug,
+                        description: p.description,
+                        contentHtml: `<h2>Details</h2><p>${p.description}</p><h3>Tech Stack</h3><ul>${p.tags.map((t: string) => `<li>${t}</li>`).join('')}</ul>`,
+                        category: p.category,
+                        tags: p.tags,
+                        client: "Example Client"
+                    }
                 }
-            ]
-        },
-        {
-            status: 'published',
-            translations: [
-                {
-                    locale: 'en',
-                    slug: 'blockchain-for-enterprise',
-                    title: 'Why Enterprise Blockchain Matters',
-                    excerpt: 'Decentralized ledgers are solving complex supply chain and verification problems for major corporations.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/blockchain-ent/1200/630'
-                },
-                {
-                    locale: 'pl',
-                    slug: 'blockchain-dla-przedsiebiorstw',
-                    title: 'Dlaczego Blockchain dla Firm ma Znaczenie',
-                    excerpt: 'Zdecentralizowane rejestry rozwiązują złożone problemy łańcucha dostaw.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/blockchain-ent/1200/630'
-                },
-                {
-                    locale: 'es',
-                    slug: 'blockchain-para-empresas',
-                    title: 'Por qué importa Blockchain para empresas',
-                    excerpt: 'Los libros mayores descentralizados resuelven problemas complejos.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/blockchain-ent/1200/630'
-                },
-                {
-                    locale: 'de',
-                    slug: 'blockchain-fuer-unternehmen',
-                    title: 'Warum Enterprise Blockchain wichtig ist',
-                    excerpt: 'Dezentrale Ledger lösen komplexe Probleme.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/blockchain-ent/1200/630'
-                },
-                {
-                    locale: 'pt',
-                    slug: 'blockchain-para-empresas-pt',
-                    title: 'Por que Blockchain Empresarial Importa',
-                    excerpt: 'Registros descentralizados resolvem problemas complexos.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/blockchain-ent/1200/630'
-                },
-                {
-                    locale: 'ru',
-                    slug: 'blokchejn-dlja-biznesa',
-                    title: 'Почему корпоративный блокчейн важен',
-                    excerpt: 'Децентрализованные реестры решают сложные задачи.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/blockchain-ent/1200/630'
-                }
-            ]
-        },
-        {
-            status: 'published',
-            translations: [
-                {
-                    locale: 'en',
-                    slug: 'iso-20022-guide',
-                    title: 'A Comprehensive Guide to ISO 20022',
-                    excerpt: 'Understanding the new global standard for payments and messaging.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/iso20022/1200/630'
-                },
-                {
-                    locale: 'pl',
-                    slug: 'przewodnik-iso-20022',
-                    title: 'Kompleksowy Przewodnik po ISO 20022',
-                    excerpt: 'Zrozumienie nowego globalnego standardu płatności i komunikacji.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/iso20022/1200/630'
-                },
-                {
-                    locale: 'es',
-                    slug: 'guia-completa-iso-20022',
-                    title: 'Una guía completa de ISO 20022',
-                    excerpt: 'Entendiendo el nuevo estándar global.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/iso20022/1200/630'
-                },
-                {
-                    locale: 'de',
-                    slug: 'umfassender-leitfaden-iso-20022',
-                    title: 'Ein umfassender Leitfaden zu ISO 20022',
-                    excerpt: 'Den neuen globalen Standard verstehen.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/iso20022/1200/630'
-                },
-                {
-                    locale: 'pt',
-                    slug: 'guia-completo-iso-20022',
-                    title: 'Um Guia Abrangente para ISO 20022',
-                    excerpt: 'Entendendo o novo padrão global.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/iso20022/1200/630'
-                },
-                {
-                    locale: 'ru',
-                    slug: 'polnoe-rukovodstvo-iso-20022',
-                    title: 'Полное руководство по ISO 20022',
-                    excerpt: 'Понимание нового глобального стандарта.',
-                    content: richContent,
-                    ogImageUrl: 'https://picsum.photos/seed/iso20022/1200/630'
-                }
-            ]
-        }
-    ]
+            }
+        })
+    }
 
-    console.log('Seeding Articles...')
+    // 4. Seed Articles
+    console.log(`Seeding ${sampleArticles.length} articles...`)
     for (const articleData of sampleArticles) {
         const article = await prisma.article.create({
             data: {
@@ -301,9 +251,10 @@ async function main() {
                     ogImageUrl: t.ogImageUrl
                 }
             })
-            console.log(`Seeded Translation: ${t.locale.toUpperCase()} /${t.slug}`)
         }
     }
+
+    console.log('✅ Seeding finished successfully.')
 }
 
 main()
