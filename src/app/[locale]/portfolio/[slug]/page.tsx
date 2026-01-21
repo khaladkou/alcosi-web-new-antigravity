@@ -1,4 +1,6 @@
 import { getProjectBySlug } from '@/lib/projects'
+import { getRelatedArticles } from '@/lib/articles'
+import { prisma } from '@/lib/db'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { Locale } from '@/i18n/config'
 import { notFound } from 'next/navigation'
@@ -8,14 +10,36 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, ExternalLink, Calendar, Code, Building2 } from 'lucide-react'
 import { Breadcrumbs } from '@/components/ui/breadcrumbs'
+import { JsonLd } from '@/components/seo/JsonLd'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string, slug: string }> }) {
     const { locale, slug } = await params
     const project = await getProjectBySlug(locale, slug)
     if (!project) return {}
+
+    // Fetch all translations for hreflang
+    // We need to fetch the project again with *all* translations to build the alternate map 
+    // or we can just optimize getProjectBySlug to return all translations, but for now let's keep it simple
+    // and assume getProjectBySlug returns what we need or we fetch independently.
+    // Actually, `getProjectBySlug` returns a single translation. We need the ID to find siblings.
+
+    // NOTE: In a real app, I'd optimize this to avoid double fetching, but for clarity:
+    const allTranslations = await prisma.projectTranslation.findMany({
+        where: { projectId: project.projectId }
+    })
+
+    const alternates: Record<string, string> = {}
+    allTranslations.forEach(t => {
+        alternates[t.locale] = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'}/${t.locale}/portfolio/${t.slug}`
+    })
+
     return {
         title: `${project.title} - Alcosi Portfolio`,
         description: project.description,
+        alternates: {
+            canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'}/${locale}/portfolio/${slug}`,
+            languages: alternates
+        }
     }
 }
 
@@ -33,8 +57,36 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
         { label: project.title, href: `/${locale}/portfolio/${slug}`, active: true }
     ]
 
+
+    // Fetch related articles
+    const relatedArticles = await getRelatedArticles(locale, project.tags)
+
     return (
         <article className="pt-32 pb-20">
+            <JsonLd data={{
+                '@context': 'https://schema.org',
+                '@type': 'CreativeWork', // Or 'SoftwareApplication' if more appropriate
+                name: project.title,
+                description: project.description,
+                image: project.coverImageUrl ? [project.coverImageUrl] : undefined,
+                author: {
+                    '@type': 'Organization',
+                    name: 'Alcosi Group',
+                    url: 'https://alcosi.com'
+                },
+                datePublished: new Date().toISOString(), // In real app, rely on DB created_at
+                keywords: project.tags.join(', ')
+            }} />
+            <JsonLd data={{
+                '@context': 'https://schema.org',
+                '@type': 'BreadcrumbList',
+                itemListElement: breadcrumbItems.map((item, index) => ({
+                    '@type': 'ListItem',
+                    position: index + 1,
+                    name: item.label,
+                    item: `https://alcosi.com${item.href}`
+                }))
+            }} />
             <div className="container mx-auto px-4 max-w-5xl">
                 <div className="mb-8">
                     <Breadcrumbs items={breadcrumbItems} />
@@ -43,7 +95,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
                 <div className="mb-8">
                     <Button variant="ghost" asChild className="pl-0 hover:pl-0 hover:bg-transparent hover:text-primary">
                         <Link href={`/${locale}/portfolio`}>
-                            <ArrowLeft className="mr-2 size-4" /> Back to Portfolio
+                            <ArrowLeft className="mr-2 size-4" /> {t.common?.back || 'Back to Portfolio'}
                         </Link>
                     </Button>
                 </div>
@@ -84,6 +136,56 @@ export default async function ProjectPage({ params }: { params: Promise<{ locale
                         <div className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-heading prose-a:text-primary">
                             <div dangerouslySetInnerHTML={{ __html: project.contentHtml }} />
                         </div>
+
+                        {/* Related Articles Section */}
+                        {relatedArticles.length > 0 && (
+                            <div className="mt-16 pt-16 border-t border-border">
+                                <h2 className="text-2xl font-bold font-heading mb-8">Related Insights</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {relatedArticles.map(article => (
+                                        <Link key={article.slug} href={`/${locale}/blog/${article.slug}`} className="group block h-full">
+                                            <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors h-full flex flex-col">
+                                                {article.cardImageUrl && (
+                                                    <div className="relative aspect-[16/9] w-full overflow-hidden">
+                                                        <Image
+                                                            src={article.cardImageUrl || article.ogImageUrl || ''}
+                                                            alt={article.title}
+                                                            fill
+                                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                                        />
+                                                    </div>
+                                                )}
+                                                <div className="p-5 flex-1 flex flex-col">
+                                                    <div className="flex flex-wrap gap-2 mb-3">
+                                                        {article.tags.slice(0, 2).map(tag => (
+                                                            <Badge key={tag} variant="secondary" className="text-[10px] px-2 h-5">
+                                                                {tag}
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
+                                                    <h3 className="font-bold text-lg mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                                                        {article.title}
+                                                    </h3>
+                                                    {article.excerpt && (
+                                                        <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-1">
+                                                            {article.excerpt}
+                                                        </p>
+                                                    )}
+                                                    <div className="flex items-center text-xs text-muted-foreground mt-auto">
+                                                        <Calendar className="mr-1.5 size-3.5" />
+                                                        {new Date(article.publishedAt!).toLocaleDateString(locale, {
+                                                            year: 'numeric',
+                                                            month: 'short',
+                                                            day: 'numeric'
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Sidebar Info */}

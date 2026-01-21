@@ -70,3 +70,54 @@ export async function getArticleBySlug(locale: string, slug: string) {
         updatedAt: translation.article.updatedAt
     }
 }
+
+export async function getRelatedArticles(locale: string, tags: string[], limit: number = 2) {
+    const lang = Object.values(Language).includes(locale as Language)
+        ? (locale as Language)
+        : Language.en
+
+    if (!tags || tags.length === 0) {
+        return []
+    }
+
+    // Find articles that have at least one matching tag
+    const articles = await prisma.article.findMany({
+        where: {
+            status: 'published',
+            translations: {
+                some: {
+                    locale: lang,
+                    tags: {
+                        hasSome: tags
+                    }
+                }
+            }
+        },
+        include: {
+            translations: {
+                where: {
+                    locale: lang
+                }
+            }
+        },
+        orderBy: {
+            publishedAt: 'desc'
+        },
+        take: limit
+    })
+
+    return articles.map(article => {
+        const t = article.translations[0]
+        return {
+            id: article.id,
+            slug: t.slug,
+            title: t.title,
+            excerpt: t.excerpt,
+            publishedAt: article.publishedAt,
+            locale: t.locale,
+            ogImageUrl: t.ogImageUrl,
+            cardImageUrl: t.cardImageUrl,
+            tags: t.tags
+        }
+    })
+}

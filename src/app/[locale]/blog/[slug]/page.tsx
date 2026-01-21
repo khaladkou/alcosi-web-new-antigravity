@@ -17,9 +17,24 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     const { locale, slug } = await params
     const article = await getArticleBySlug(locale, slug)
     if (!article) return {}
+
+    // Fetch all translations for hreflang
+    const allTranslations = await prisma.articleTranslation.findMany({
+        where: { articleId: article.articleId }
+    })
+
+    const alternates: Record<string, string> = {}
+    allTranslations.forEach(t => {
+        alternates[t.locale] = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'}/${t.locale}/blog/${t.slug}`
+    })
+
     return {
         title: article.metaTitle || article.title,
         description: article.metaDescription || article.excerpt,
+        alternates: {
+            canonical: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'}/${locale}/blog/${slug}`,
+            languages: alternates
+        }
     }
 }
 

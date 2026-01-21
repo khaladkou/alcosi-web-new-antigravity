@@ -32,17 +32,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
     }
 
-    // 2. Portfolio Projects (Localized Data)
-    for (const locale of locales) {
-        const t = await getDictionary(locale as Locale)
-        const projects = t.portfolio.items
+    // 2. Portfolio Projects (Database)
+    // Fetch all published projects with translations
+    const projects = await prisma.project.findMany({
+        where: { status: 'published' },
+        include: { translations: true }
+    })
 
-        for (const project of projects) {
+    for (const project of projects) {
+        for (const translation of project.translations) {
             sitemapEntries.push({
-                url: `${BASE_URL}/${locale}/portfolio/${project.slug}`,
-                lastModified: new Date(),
+                url: `${BASE_URL}/${translation.locale}/portfolio/${translation.slug}`,
+                lastModified: project.updatedAt,
                 changeFrequency: 'monthly',
-                priority: 0.7
+                priority: 0.7,
+                images: project.imageUrl ? [project.imageUrl] : undefined
             })
         }
     }
@@ -61,7 +65,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
                 url: `${BASE_URL}/${translation.locale}/blog/${translation.slug}`,
                 lastModified: article.updatedAt,
                 changeFrequency: 'weekly',
-                priority: 0.6
+                priority: 0.6,
+                images: translation.cardImageUrl || translation.ogImageUrl ? [translation.cardImageUrl || translation.ogImageUrl!] : undefined
             })
         }
     }

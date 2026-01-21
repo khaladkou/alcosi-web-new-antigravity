@@ -10,24 +10,36 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const { locale } = await params
   const t = await getDictionary(locale as Locale)
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'Alcosi Group',
-    url: 'https://alcosi.com',
-    logo: 'https://alcosi.com/logo.png', // Placeholder, ideally should be real
-    sameAs: [
-      'https://linkedin.com/company/alcosigroups',
-      // Add other social profiles here
-    ],
-    contactPoint: {
-      '@type': 'ContactPoint',
-      telephone: '+48-123-456-789',
-      contactType: 'customer service',
-      areaServed: ['PL', 'EU', 'US'],
-      availableLanguage: ['English', 'Polish', 'Spanish', 'German', 'Russian', 'Portuguese']
+  const jsonLd = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Alcosi Group',
+      url: 'https://alcosi.com',
+      logo: 'https://alcosi.com/logo.png', // Placeholder
+      sameAs: [
+        'https://linkedin.com/company/alcosigroups',
+      ],
+      contactPoint: {
+        '@type': 'ContactPoint',
+        telephone: '+48-123-456-789',
+        contactType: 'customer service',
+        areaServed: ['PL', 'EU', 'US'],
+        availableLanguage: ['English', 'Polish', 'Spanish', 'German', 'Russian', 'Portuguese']
+      }
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Alcosi Group',
+      url: 'https://alcosi.com',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://alcosi.com/search?q={search_term_string}',
+        'query-input': 'required name=search_term_string'
+      }
     }
-  }
+  ]
 
   return (
     <div className="flex flex-col gap-12">

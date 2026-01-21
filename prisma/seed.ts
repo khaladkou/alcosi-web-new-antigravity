@@ -51,7 +51,7 @@ const projects = [
         description: "Decentralized logistical tracking system ensuring transparency from manufacturer to end consumer.",
         imageUrl: "https://picsum.photos/seed/supplychain/800/600",
         slug: "supply-chain-tracker",
-        tags: ["Solidity", "Ethereum", "Web3.js"]
+        tags: ["Blockchain", "Solidity", "Web3.js"]
     },
     {
         title: "AlgoTrading Bot",
@@ -59,7 +59,7 @@ const projects = [
         description: "High-frequency trading bot utilizing predictive machine learning models to analyze market trends.",
         imageUrl: "https://picsum.photos/seed/algotrading/800/600",
         slug: "algotrading-bot",
-        tags: ["Python", "TensorFlow", "PostgreSQL"]
+        tags: ["AI", "Fintech", "Python", "TensorFlow"]
     },
     {
         title: "Crypto Exchange Platform",
@@ -131,7 +131,8 @@ const sampleArticles = [
                     </ul>
                     <p>This shift allows banks to offer services that feel tailor-made for each individual, increasing customer loyalty and retention.</p>
                 `,
-                ogImageUrl: 'https://picsum.photos/seed/fintech-ai/1200/630'
+                ogImageUrl: 'https://picsum.photos/seed/fintech-ai/1200/630',
+                tags: ['AI', 'Fintech', 'Banking']
             },
             // Other languages omitted for brevity in seed, but easy to add back if needed. 
             // For a clean handover, English is sufficient to demonstrate structure.
@@ -146,7 +147,8 @@ const sampleArticles = [
                 title: 'Why Enterprise Blockchain Matters',
                 excerpt: 'Decentralized ledgers are solving complex supply chain and verification problems for major corporations.',
                 content: richContent,
-                ogImageUrl: 'https://picsum.photos/seed/blockchain-ent/1200/630'
+                ogImageUrl: 'https://picsum.photos/seed/blockchain-ent/1200/630',
+                tags: ['Blockchain', 'Supply Chain', 'Enterprise']
             }
         ]
     },
@@ -248,7 +250,9 @@ async function main() {
                     contentHtml: t.content,
                     metaTitle: t.title,
                     metaDescription: t.excerpt,
-                    ogImageUrl: t.ogImageUrl
+                    metaDescription: t.excerpt,
+                    ogImageUrl: t.ogImageUrl,
+                    tags: (t as any).tags || []
                 }
             })
         }
