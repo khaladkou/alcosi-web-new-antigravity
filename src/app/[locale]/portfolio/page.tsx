@@ -3,7 +3,7 @@ import { getDictionary } from '@/i18n/get-dictionary'
 import { Locale } from '@/i18n/config'
 import { getLatestProjects } from '@/lib/projects'
 import { JsonLd } from '@/components/seo/JsonLd'
-import { locales } from '@/i18n/config'
+import { getLocalizedPath, getAllLocalizedPaths } from '@/i18n/paths'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
 
@@ -11,16 +11,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     const { locale } = await params
     const t = await getDictionary(locale as Locale)
 
-    const alternates: Record<string, string> = {}
-    locales.forEach(l => {
-        alternates[l] = `${BASE_URL}/${l}/portfolio`
-    })
+    const alternates = getAllLocalizedPaths('/portfolio')
+    const canonical = `${BASE_URL}${getLocalizedPath(locale as Locale, '/portfolio')}`
 
     return {
         title: 'Portfolio - Alcosi Group',
         description: 'Case studies of successful AI, Fintech, and Blockchain projects delivered by Alcosi Group.',
         alternates: {
-            canonical: `${BASE_URL}/${locale}/portfolio`,
+            canonical: canonical,
             languages: alternates
         }
     }

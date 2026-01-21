@@ -9,23 +9,21 @@ import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import { BreadcrumbJsonLd } from '@/components/seo/BreadcrumbJsonLd'
 
 import { JsonLd } from '@/components/seo/JsonLd'
-import { locales } from '@/i18n/config'
+import { getLocalizedPath, getAllLocalizedPaths } from '@/i18n/paths'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
 
-    const alternates: Record<string, string> = {}
-    locales.forEach(l => {
-        alternates[l] = `${BASE_URL}/${l}/services/blockchain`
-    })
+    const alternates = getAllLocalizedPaths('/services/blockchain')
+    const canonical = `${BASE_URL}${getLocalizedPath(locale as Locale, '/services/blockchain')}`
 
     return {
         title: 'Blockchain Engineering - Alcosi Group',
         description: 'Decentralized Application (dApp) development and Smart Contract auditing.',
         alternates: {
-            canonical: `${BASE_URL}/${locale}/services/blockchain`,
+            canonical: canonical,
             languages: alternates
         }
     }

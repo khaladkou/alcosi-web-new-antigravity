@@ -6,7 +6,7 @@ import { getDictionary } from '@/i18n/get-dictionary'
 import { Locale } from '@/i18n/config'
 
 import { JsonLd } from '@/components/seo/JsonLd'
-import { locales } from '@/i18n/config'
+import { getLocalizedPath, getAllLocalizedPaths } from '@/i18n/paths'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
 
@@ -14,16 +14,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     const { locale } = await params
     const t = await getDictionary(locale as Locale)
 
-    const alternates: Record<string, string> = {}
-    locales.forEach(l => {
-        alternates[l] = `${BASE_URL}/${l}/services`
-    })
+    const alternates = getAllLocalizedPaths('/services')
+    const canonical = `${BASE_URL}${getLocalizedPath(locale as Locale, '/services')}`
 
     return {
         title: 'Our Services - Alcosi Group',
         description: 'AI, Fintech, and Blockchain development services tailored for enterprise growth.',
         alternates: {
-            canonical: `${BASE_URL}/${locale}/services`,
+            canonical: canonical,
             languages: alternates
         }
     }

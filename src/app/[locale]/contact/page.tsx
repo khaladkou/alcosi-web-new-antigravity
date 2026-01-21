@@ -2,8 +2,9 @@ import { ContactForm } from '@/components/sections/ContactForm'
 import { ServiceHero } from '@/components/sections/ServiceHero'
 import { Mail, Phone, MapPin } from 'lucide-react'
 import { getDictionary } from '@/i18n/get-dictionary'
-import { Locale, locales } from '@/i18n/config'
+import { Locale } from '@/i18n/config'
 import { JsonLd } from '@/components/seo/JsonLd'
+import { getLocalizedPath, getAllLocalizedPaths } from '@/i18n/paths'
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
@@ -11,19 +12,15 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
 
-    // Construct alternates
-    const languages: Record<string, string> = {}
-    // We assume the path is always '/contact' for all locales
-    locales.forEach(l => {
-        languages[l] = `${BASE_URL}/${l}/contact`
-    })
+    const alternates = getAllLocalizedPaths('/contact')
+    const canonical = `${BASE_URL}${getLocalizedPath(locale as Locale, '/contact')}`
 
     return {
         title: 'Contact Us - Alcosi Group',
         description: 'Get in touch with Alcosi Group for AI, Fintech, and Blockchain development inquiries.',
         alternates: {
-            canonical: `${BASE_URL}/${locale}/contact`,
-            languages: languages
+            canonical: canonical,
+            languages: alternates
         }
     }
 }
