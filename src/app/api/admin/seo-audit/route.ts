@@ -60,6 +60,21 @@ export async function POST(request: Request) {
         }
 
         const result = await scanUrl(url)
+
+        try {
+            await prisma.webhookLog.create({
+                data: {
+                    provider: 'SEO_AUDIT',
+                    method: 'SCAN',
+                    url: url,
+                    status: result.statusCode,
+                    payload: result as any
+                }
+            })
+        } catch (logError) {
+            console.error('Failed to log SEO audit event', logError)
+        }
+
         return NextResponse.json(result)
     } catch (e) {
         return NextResponse.json({ error: 'Failed to scan URL' }, { status: 500 })

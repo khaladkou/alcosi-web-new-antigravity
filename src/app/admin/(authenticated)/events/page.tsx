@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 
 type EventLog = {
     id: string
-    type: 'WEBHOOK' | 'CONTACT'
+    type: 'WEBHOOK' | 'CONTACT' | 'SEO_AUDIT'
     status: 'SUCCESS' | 'FAILED'
     date: Date
     summary: string
@@ -31,12 +31,13 @@ export default async function EventsPage() {
     const events: EventLog[] = []
 
     webhooks.forEach(log => {
+        const isSeo = log.provider === 'SEO_AUDIT'
         events.push({
             id: log.id,
-            type: 'WEBHOOK',
+            type: isSeo ? 'SEO_AUDIT' : 'WEBHOOK',
             status: log.status >= 200 && log.status < 300 ? 'SUCCESS' : 'FAILED',
+            summary: isSeo ? `Page Scan: ${log.url}` : `${log.provider} (${log.method})`,
             date: log.createdAt,
-            summary: `${log.provider} (${log.method})`,
             details: {
                 url: log.url,
                 payload: log.payload,

@@ -9,7 +9,8 @@ import {
     Settings,
     LogOut,
     Briefcase,
-    Shuffle
+    Shuffle,
+    Globe
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -56,7 +57,17 @@ export function Sidebar() {
                 })}
             </nav>
 
-            <div className="p-4 border-t border-border">
+            <div className="p-4 border-t border-border space-y-2">
+                <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    asChild
+                >
+                    <a href={process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'} target="_blank" rel="noopener noreferrer">
+                        <Globe className="mr-2 size-4" /> View Site
+                    </a>
+                </Button>
+
                 <Button
                     variant="ghost"
                     className="w-full justify-start text-muted-foreground hover:text-destructive"
