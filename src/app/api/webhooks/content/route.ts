@@ -3,23 +3,34 @@ import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { Language, ArticleStatus } from '@prisma/client'
 
-// Schema for validation
-const contentSchema = z.object({
-    secret: z.string(), // Simple secret check in body or we can use Header
-    action: z.enum(['create', 'update', 'delete']).default('create'),
-    data: z.object({
-        slug: z.string(),
-        locale: z.nativeEnum(Language),
-        title: z.string(),
-        excerpt: z.string().optional(),
-        contentHtml: z.string(),
-        metaTitle: z.string().optional(),
-        metaDescription: z.string().optional(),
-        tags: z.array(z.string()).optional(), // We don't have tags in DB yet, but good to accept
-        status: z.nativeEnum(ArticleStatus).default(ArticleStatus.published),
-        publishedAt: z.string().optional(), // ISO string
-    })
+const baseSchema = z.object({
+    secret: z.string(),
 })
+
+const dataDataSchema = z.object({
+    slug: z.string(),
+    locale: z.nativeEnum(Language),
+    title: z.string(),
+    excerpt: z.string().optional(),
+    contentHtml: z.string(),
+    metaTitle: z.string().optional(),
+    metaDescription: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    status: z.nativeEnum(ArticleStatus).default(ArticleStatus.published),
+    publishedAt: z.string().optional(),
+})
+
+const errorDataSchema = z.object({
+    slug: z.string().optional(),
+    locale: z.nativeEnum(Language).optional(),
+    error: z.string(),
+    details: z.any().optional()
+})
+
+const contentSchema = z.discriminatedUnion('action', [
+    z.object({ action: z.enum(['create', 'update', 'delete']).default('create'), data: dataDataSchema }).merge(baseSchema),
+    z.object({ action: z.literal('error'), data: errorDataSchema }).merge(baseSchema)
+])
 
 export async function POST(request: NextRequest) {
     let body: any = {}
@@ -27,7 +38,6 @@ export async function POST(request: NextRequest) {
     try {
         body = await request.json()
     } catch (e) {
-        // Log invalid JSON attempt
         await prisma.webhookLog.create({
             data: {
                 provider: 'ai-agent',
@@ -41,19 +51,19 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
 
+    // Initial Log (Pending)
+    const logEntry = await prisma.webhookLog.create({
+        data: {
+            provider: 'ai-agent',
+            method: 'POST',
+            url: request.url,
+            payload: body,
+            status: 0,
+        }
+    })
+
     try {
         const result = contentSchema.safeParse(body)
-
-        // Log the attempt
-        const logEntry = await prisma.webhookLog.create({
-            data: {
-                provider: 'ai-agent',
-                method: 'POST',
-                url: request.url,
-                payload: body,
-                status: 0, // Placeholder
-            }
-        })
 
         if (!result.success) {
             const errorResponse = { error: 'Invalid payload', details: result.error.format() }
@@ -64,7 +74,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(errorResponse, { status: 400 })
         }
 
-        const { secret, data } = result.data
+        const { secret, action, data } = result.data
 
         if (secret !== process.env.WEBHOOK_SECRET) {
             await prisma.webhookLog.update({
@@ -74,13 +84,29 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
 
-        // Logic
+        // Handle Error Report
+        if (action === 'error') {
+            await prisma.webhookLog.update({
+                where: { id: logEntry.id },
+                data: {
+                    status: 500, // Mark as failed in UI
+                    error: data.error,
+                    response: { received: true, type: 'error_report' } as any
+                }
+            })
+            return NextResponse.json({ success: true, message: 'Error report logged' })
+        }
+
+        // Handle Content Operations (Create/Update)
+        // At this point, TS knows data is dataDataSchema because of discriminated union
+        const contentData = data as z.infer<typeof dataDataSchema> // Explicit cast if inference fails, but should work
+
         let operationResult
         const existingTranslation = await prisma.articleTranslation.findUnique({
             where: {
                 locale_slug: {
-                    locale: data.locale,
-                    slug: data.slug
+                    locale: contentData.locale,
+                    slug: contentData.slug
                 }
             },
             include: { article: true }
@@ -90,35 +116,35 @@ export async function POST(request: NextRequest) {
             const updated = await prisma.articleTranslation.update({
                 where: { id: existingTranslation.id },
                 data: {
-                    title: data.title,
-                    excerpt: data.excerpt,
-                    contentHtml: data.contentHtml,
-                    metaTitle: data.metaTitle || data.title,
-                    metaDescription: data.metaDescription || data.excerpt,
+                    title: contentData.title,
+                    excerpt: contentData.excerpt,
+                    contentHtml: contentData.contentHtml,
+                    metaTitle: contentData.metaTitle || contentData.title,
+                    metaDescription: contentData.metaDescription || contentData.excerpt,
                 }
             })
             await prisma.article.update({
                 where: { id: existingTranslation.articleId },
                 data: {
                     updatedAt: new Date(),
-                    ...(data.publishedAt ? { publishedAt: new Date(data.publishedAt) } : {})
+                    ...(contentData.publishedAt ? { publishedAt: new Date(contentData.publishedAt) } : {})
                 }
             })
             operationResult = { success: true, operation: 'update', id: updated.id }
         } else {
             const newArticle = await prisma.article.create({
                 data: {
-                    status: data.status,
-                    publishedAt: data.publishedAt ? new Date(data.publishedAt) : new Date(),
+                    status: contentData.status,
+                    publishedAt: contentData.publishedAt ? new Date(contentData.publishedAt) : new Date(),
                     translations: {
                         create: {
-                            locale: data.locale,
-                            slug: data.slug,
-                            title: data.title,
-                            excerpt: data.excerpt,
-                            contentHtml: data.contentHtml,
-                            metaTitle: data.metaTitle || data.title,
-                            metaDescription: data.metaDescription || data.excerpt,
+                            locale: contentData.locale,
+                            slug: contentData.slug,
+                            title: contentData.title,
+                            excerpt: contentData.excerpt,
+                            contentHtml: contentData.contentHtml,
+                            metaTitle: contentData.metaTitle || contentData.title,
+                            metaDescription: contentData.metaDescription || contentData.excerpt,
                         }
                     }
                 }
@@ -135,16 +161,9 @@ export async function POST(request: NextRequest) {
 
     } catch (error: any) {
         console.error('Webhook Error:', error)
-        // Try to log the system error if we can
-        await prisma.webhookLog.create({
-            data: {
-                provider: 'ai-agent',
-                method: 'POST',
-                url: request.url,
-                payload: body,
-                status: 500,
-                error: String(error)
-            }
+        await prisma.webhookLog.update({
+            where: { id: logEntry.id },
+            data: { status: 500, error: String(error) }
         })
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }

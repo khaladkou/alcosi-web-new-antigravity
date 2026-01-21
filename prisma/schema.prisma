@@ -112,6 +112,7 @@ model ContactSubmission {
   source    String?  
   status    String   // "success" | "failed"
   error     String?
+  isRead    Boolean  @default(false) @map("is_read")
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("contact_submissions")

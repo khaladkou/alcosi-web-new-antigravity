@@ -16,13 +16,14 @@ import { Button } from '@/components/ui/button'
 
 const NAV_ITEMS = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+    { label: 'Inbox', href: '/admin/inbox', icon: Activity }, // Or Inbox icon if available, will stick to available imports
     { label: 'Articles', href: '/admin/articles', icon: FileText },
     { label: 'Portfolio', href: '/admin/projects', icon: Briefcase },
     { label: 'Events', href: '/admin/events', icon: Activity },
     { label: 'Webhooks', href: '/admin/webhooks', icon: Activity },
-    { label: 'SEO Audit', href: '/admin/seo-audit', icon: Activity }, // Using Activity icon for now
+    { label: 'SEO Audit', href: '/admin/seo-audit', icon: Activity },
     { label: 'Redirects', href: '/admin/redirects', icon: Shuffle },
-    { label: 'Legal', href: '/admin/legal', icon: FileText }, // Reusing FileText or finding better icon
+    { label: 'Legal', href: '/admin/legal', icon: FileText },
     { label: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
