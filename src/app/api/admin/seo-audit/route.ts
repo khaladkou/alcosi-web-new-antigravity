@@ -6,7 +6,14 @@ import { getLocalizedPath } from '@/i18n/paths'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com' // or http://localhost:3000
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
+    const { protocol, host } = new URL(request.url)
+    const hostHeader = request.headers.get('x-forwarded-host') || request.headers.get('host')
+    const protocolHeader = request.headers.get('x-forwarded-proto') || 'http'
+    const dynamicBaseUrl = `${protocolHeader}://${hostHeader}`
+
     // 1. Gather all URLs to scan
     const urls: string[] = []
 
@@ -15,7 +22,7 @@ export async function GET(request: Request) {
 
     locales.forEach(locale => {
         staticPaths.forEach(path => {
-            urls.push(`${BASE_URL}${getLocalizedPath(locale, path)}`)
+            urls.push(`${dynamicBaseUrl}${getLocalizedPath(locale, path)}`)
         })
     })
 
@@ -26,7 +33,7 @@ export async function GET(request: Request) {
     })
     projects.forEach(p => {
         p.translations.forEach(t => {
-            urls.push(`${BASE_URL}/${t.locale}/portfolio/${t.slug}`)
+            urls.push(`${dynamicBaseUrl}/${t.locale}/portfolio/${t.slug}`)
         })
     })
 
@@ -37,7 +44,7 @@ export async function GET(request: Request) {
     })
     articles.forEach(a => {
         a.translations.forEach(t => {
-            urls.push(`${BASE_URL}/${t.locale}/blog/${t.slug}`)
+            urls.push(`${dynamicBaseUrl}/${t.locale}/blog/${t.slug}`)
         })
     })
 

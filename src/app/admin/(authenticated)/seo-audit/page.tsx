@@ -13,33 +13,54 @@ export default function SeoAuditPage() {
     const [isLoading, setIsLoading] = useState(false)
     const [progress, setProgress] = useState(0)
     const [currentUrl, setCurrentUrl] = useState<string | null>(null)
+    const [logs, setLogs] = useState<string[]>([])
+
+    const addLog = (msg: string) => {
+        setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev])
+    }
 
     const fetchUrls = async () => {
         setIsLoading(true)
+        addLog('Fetching URL list...')
         try {
-            const res = await fetch('/api/admin/seo-audit')
+            const res = await fetch('/api/admin/seo-audit', { cache: 'no-store' })
             if (res.ok) {
                 const data = await res.json()
                 setUrls(data.urls)
+                addLog(`Fetched ${data.urls.length} URLs to scan.`)
+            } else {
+                addLog(`Error fetching URLs: ${res.status} ${res.statusText}`)
             }
         } catch (e) {
             console.error('Failed to fetch URLs', e)
+            addLog(`Failed to fetch URLs: ${String(e)}`)
         } finally {
             setIsLoading(false)
         }
     }
 
     const startAudit = async () => {
-        if (urls.length === 0) await fetchUrls()
-
-        // Use a local copy or refetch if empty, but assuming urls populated:
-        // Re-fetch to be safe if start pressed immediately
+        addLog('Starting full audit...')
         let targets = urls
+
         if (targets.length === 0) {
-            const res = await fetch('/api/admin/seo-audit')
-            const data = await res.json()
-            targets = data.urls
-            setUrls(targets)
+            addLog('No URLs loaded, fetching fresh list...')
+            try {
+                const res = await fetch('/api/admin/seo-audit', { cache: 'no-store' })
+                if (!res.ok) throw new Error(`API Error: ${res.status}`)
+                const data = await res.json()
+                targets = data.urls
+                setUrls(targets)
+                addLog(`Loaded ${targets.length} URLs.`)
+            } catch (e) {
+                addLog(`Critical Error: Could not load URLs. ${e}`)
+                return
+            }
+        }
+
+        if (targets.length === 0) {
+            addLog('No URLs found even after fetch. Aborting.')
+            return
         }
 
         setIsLoading(true)
@@ -49,21 +70,34 @@ export default function SeoAuditPage() {
         let completed = 0
         for (const url of targets) {
             setCurrentUrl(url)
+            addLog(`Scanning: ${url}`)
             try {
                 const res = await fetch('/api/admin/seo-audit', {
                     method: 'POST',
                     body: JSON.stringify({ url }),
-                    headers: { 'Content-Type': 'application/json' }
+                    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
                 })
+
+                if (!res.ok) {
+                    addLog(`Server Error for ${url}: ${res.status}`)
+                    continue
+                }
+
                 const data = await res.json()
                 setResults(prev => ({ ...prev, [url]: data }))
+
+                const statusIcon = data.statusCode === 200 ? '✅' : '❌'
+                addLog(`Result: ${statusIcon} Status ${data.statusCode} (${data.loadTime}ms)`)
+
             } catch (e) {
                 console.error(`Failed to scan ${url}`, e)
+                addLog(`Network/Client Error scanning ${url}: ${e}`)
             } finally {
                 completed++
                 setProgress(Math.round((completed / targets.length) * 100))
             }
         }
+        addLog('Audit completed.')
         setIsLoading(false)
         setCurrentUrl(null)
     }
@@ -117,6 +151,20 @@ export default function SeoAuditPage() {
                             className="h-full bg-primary transition-all duration-300 ease-out"
                             style={{ width: `${progress}%` }}
                         />
+                    </div>
+                </div>
+            )}
+
+            {logs.length > 0 && (
+                <div className="mb-8 p-4 bg-muted/40 rounded-lg border border-border h-48 overflow-y-auto font-mono text-xs">
+                    <div className="flex justify-between items-center mb-2 sticky top-0 bg-transparent">
+                        <span className="font-semibold">Event Log</span>
+                        <Button variant="ghost" size="sm" onClick={() => setLogs([])} className="h-6">Clear</Button>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        {logs.map((log, i) => (
+                            <div key={i} className="text-muted-foreground border-b border-border/50 pb-1 last:border-0">{log}</div>
+                        ))}
                     </div>
                 </div>
             )}

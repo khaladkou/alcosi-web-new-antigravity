@@ -72,6 +72,8 @@ Access the Admin Panel at [http://localhost:3000/admin](http://localhost:3000/ad
 
 ## 🚢 Deployment
 
+> **👉 Critical**: Read the [Deployment Guide](DEPLOYMENT.md) for production configuration checklist.
+
 ### Vercel (Recommended)
 1. Push code to GitHub.
 2. Import project in Vercel.
