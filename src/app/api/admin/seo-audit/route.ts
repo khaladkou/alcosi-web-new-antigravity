@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { scanUrl } from '@/lib/seo-scanner'
 import { locales } from '@/i18n/config'
+import { getLocalizedPath } from '@/i18n/paths'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com' // or http://localhost:3000
 
@@ -10,11 +11,11 @@ export async function GET(request: Request) {
     const urls: string[] = []
 
     // Static Pages (Main locales + Home)
-    const staticPaths = ['', '/contact', '/portfolio', '/blog', '/services']
+    const staticPaths = ['', '/contact', '/portfolio', '/blog', '/services', '/services/ai', '/services/fintech', '/services/blockchain']
 
     locales.forEach(locale => {
         staticPaths.forEach(path => {
-            urls.push(`${BASE_URL}/${locale}${path}`)
+            urls.push(`${BASE_URL}${getLocalizedPath(locale, path)}`)
         })
     })
 

@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next'
 import { prisma } from '@/lib/db'
 import { locales, Locale } from '@/i18n/config'
 import { getDictionary } from '@/i18n/get-dictionary'
+import { getLocalizedPath } from '@/i18n/paths'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
 
@@ -24,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     for (const locale of locales) {
         for (const route of staticRoutes) {
             sitemapEntries.push({
-                url: `${BASE_URL}/${locale}${route}`,
+                url: `${BASE_URL}${getLocalizedPath(locale, route)}`,
                 lastModified: new Date(),
                 changeFrequency: 'weekly',
                 priority: route === '' ? 1.0 : 0.8,
