@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, XCircle, LayoutDashboard, Globe, AlertCircle, Loader2 } from 'lucide-react'
+import { CheckCircle2, XCircle, LayoutDashboard, Globe, AlertCircle, Loader2, Copy } from 'lucide-react'
 import type { SeoAnalysisResult } from '@/lib/seo-scanner'
+import { toast } from 'sonner'
 
 export default function SeoAuditPage() {
     const [urls, setUrls] = useState<string[]>([])
@@ -67,6 +68,13 @@ export default function SeoAuditPage() {
         setCurrentUrl(null)
     }
 
+    const copyAllUrls = () => {
+        if (urls.length === 0) return
+        const text = urls.join('\n')
+        navigator.clipboard.writeText(text)
+        toast.success(`Copied ${urls.length} URLs to clipboard`)
+    }
+
     useEffect(() => {
         fetchUrls()
     }, [])
@@ -80,17 +88,22 @@ export default function SeoAuditPage() {
                         Automatically scan all pages for Schema.org, canonical tags, hreflang, and more.
                     </p>
                 </div>
-                <Button onClick={startAudit} disabled={isLoading} size="lg">
-                    {isLoading ? (
-                        <>
-                            <Loader2 className="mr-2 size-4 animate-spin" /> Scanning... {progress}%
-                        </>
-                    ) : (
-                        <>
-                            <LayoutDashboard className="mr-2 size-4" /> Start Full Audit
-                        </>
-                    )}
-                </Button>
+                <div className="flex gap-4">
+                    <Button onClick={copyAllUrls} variant="outline" size="lg" disabled={urls.length === 0}>
+                        <Copy className="mr-2 size-4" /> Copy List
+                    </Button>
+                    <Button onClick={startAudit} disabled={isLoading} size="lg">
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="mr-2 size-4 animate-spin" /> Scanning... {progress}%
+                            </>
+                        ) : (
+                            <>
+                                <LayoutDashboard className="mr-2 size-4" /> Start Full Audit
+                            </>
+                        )}
+                    </Button>
+                </div>
             </div>
 
             {isLoading && (
@@ -113,7 +126,10 @@ export default function SeoAuditPage() {
                     <table className="w-full text-sm">
                         <thead className="bg-muted/50 border-b border-border">
                             <tr>
-                                <th className="px-4 py-3 text-left font-medium text-muted-foreground">URL</th>
+                                <th className="px-4 py-3 text-left font-medium text-muted-foreground flex items-center gap-2 group cursor-pointer hover:text-foreground transition-colors" onClick={copyAllUrls} title="Copy all URLs">
+                                    URL
+                                    <Copy className="size-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                </th>
                                 <th className="px-4 py-3 text-center font-medium text-muted-foreground">Status</th>
                                 <th className="px-4 py-3 text-center font-medium text-muted-foreground">Title/Desc</th>
                                 <th className="px-4 py-3 text-center font-medium text-muted-foreground">Canonical</th>

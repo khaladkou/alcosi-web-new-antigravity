@@ -1,5 +1,6 @@
 import { Outfit, Inter } from "next/font/google";
 import "../globals.css";
+import { Toaster } from 'sonner'
 
 const outfit = Outfit({
     variable: "--font-outfit",
@@ -27,6 +28,7 @@ export default function AdminLayout({
         <html lang="en">
             <body className={`${outfit.variable} ${inter.variable} antialiased font-sans`}>
                 {children}
+                <Toaster richColors />
             </body>
         </html>
     );
