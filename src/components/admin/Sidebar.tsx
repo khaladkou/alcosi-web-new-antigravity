@@ -24,6 +24,7 @@ const NAV_ITEMS = [
     { label: 'SEO Audit', href: '/admin/seo-audit', icon: Activity },
     { label: 'Redirects', href: '/admin/redirects', icon: Shuffle },
     { label: 'Legal', href: '/admin/legal', icon: FileText },
+    { label: 'System Check', href: '/admin/system-test', icon: Activity },
     { label: 'Settings', href: '/admin/settings', icon: Settings },
 ]
 
