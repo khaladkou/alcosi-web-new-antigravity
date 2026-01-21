@@ -3,6 +3,8 @@ import { ServiceHero } from '@/components/sections/ServiceHero'
 import { Mail, Phone, MapPin } from 'lucide-react'
 import { getDictionary } from '@/i18n/get-dictionary'
 import { Locale, locales } from '@/i18n/config'
+import { JsonLd } from '@/components/seo/JsonLd'
+
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
 
@@ -32,6 +34,21 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
 
     return (
         <>
+            <JsonLd data={{
+                '@context': 'https://schema.org',
+                '@type': 'ContactPage',
+                name: t.contact.title,
+                description: t.contact.subtitle,
+                url: `${BASE_URL}/${locale}/contact`,
+                mainEntity: {
+                    '@type': 'Organization',
+                    name: 'Alcosi Group',
+                    url: BASE_URL,
+                    email: 'contact@alcosi.com',
+                    telephone: '+1-555-123-4567'
+                }
+            }} />
+
             <ServiceHero
                 title={t.contact.title}
                 subtitle={t.contact.subtitle}
