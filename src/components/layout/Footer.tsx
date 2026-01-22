@@ -5,9 +5,12 @@ interface FooterProps {
     dictionary: Dictionary['footer']
     common: Dictionary['common']
     locale: string
+    settings: Record<string, string>
 }
 
-export function Footer({ dictionary, common, locale }: FooterProps) {
+import { Linkedin, Twitter, Instagram } from 'lucide-react'
+
+export function Footer({ dictionary, common, locale, settings }: FooterProps) {
     const year = new Date().getFullYear()
 
     return (
@@ -34,6 +37,16 @@ export function Footer({ dictionary, common, locale }: FooterProps) {
                         <h4 className="font-semibold mb-4">{dictionary.company}</h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href={`/${locale}/about`} className="hover:text-primary">About Us</Link></li>
+                            <li>
+                                <a href={`mailto:${settings.contact_email || 'hello@alcosi.com'}`} className="hover:text-primary">
+                                    {settings.contact_email || 'contact@alcosi.com'}
+                                </a>
+                            </li>
+                            <li>
+                                <a href={`tel:${settings.contact_phone}`} className="hover:text-primary">
+                                    {settings.contact_phone || '+1 (555) 123-4567'}
+                                </a>
+                            </li>
                             <li><Link href={`/${locale}/contact`} className="hover:text-primary">{common.contact_us}</Link></li>
                         </ul>
                     </div>
@@ -47,8 +60,31 @@ export function Footer({ dictionary, common, locale }: FooterProps) {
                     </div>
                 </div>
 
-                <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-                    © {year} Alcosi Group. {dictionary.rights}
+                {/* Social Media & Copyright */}
+                <div className="mt-8 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4">
+                        {settings.social_linkedin && (
+                            <a href={settings.social_linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                                <Linkedin className="size-5" />
+                                <span className="sr-only">LinkedIn</span>
+                            </a>
+                        )}
+                        {settings.social_twitter && (
+                            <a href={settings.social_twitter} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                                <Twitter className="size-5" />
+                                <span className="sr-only">X (Twitter)</span>
+                            </a>
+                        )}
+                        {settings.social_instagram && (
+                            <a href={settings.social_instagram} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                                <Instagram className="size-5" />
+                                <span className="sr-only">Instagram</span>
+                            </a>
+                        )}
+                    </div>
+                    <div>
+                        © {year} Alcosi Group. {dictionary.rights}
+                    </div>
                 </div>
             </div>
         </footer>

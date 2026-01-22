@@ -118,6 +118,17 @@ model ContactSubmission {
   @@map("contact_submissions")
 }
 
+model BotVisit {
+  id        String   @id @default(cuid())
+  botType   String   @map("bot_type") // Google, ChatGPT, Bing, etc.
+  userAgent String   @map("user_agent")
+  path      String
+  ip        String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("bot_visits")
+}
+
 model Project {
   id           Int      @id @default(autoincrement())
   status       ArticleStatus @default(draft) // Reuse ArticleStatus

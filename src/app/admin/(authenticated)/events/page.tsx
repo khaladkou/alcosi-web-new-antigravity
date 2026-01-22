@@ -20,40 +20,42 @@ export default async function EventsPage(props: PageProps) {
     // Build filters
     const webhookWhere: any = {}
     const contactWhere: any = {}
+    const botWhere: any = {}
 
     if (type !== 'ALL') {
         if (type === 'CONTACT') {
-            webhookWhere.id = 'IMPOSSIBLE' // Don't fetch webhooks
+            webhookWhere.id = 'IMPOSSIBLE'
+            botWhere.id = 'IMPOSSIBLE'
         } else if (type === 'WEBHOOK' || type === 'SEO_AUDIT') {
-            contactWhere.id = 'IMPOSSIBLE' // Don't fetch contacts
+            contactWhere.id = 'IMPOSSIBLE'
+            botWhere.id = 'IMPOSSIBLE'
             if (type === 'SEO_AUDIT') {
                 webhookWhere.provider = 'SEO_AUDIT'
             } else {
                 webhookWhere.NOT = { provider: 'SEO_AUDIT' }
             }
+        } else if (type === 'BOT') {
+            webhookWhere.id = 'IMPOSSIBLE'
+            contactWhere.id = 'IMPOSSIBLE'
         }
     }
 
     if (status !== 'ALL') {
         const isSuccess = status === 'SUCCESS'
-        // Webhooks use status codes (2xx) or specific status fields
+        // Bots don't have "status" really, they are just visits. Assume success?
+        // Or ignore status filter for bots.
         if (isSuccess) {
             webhookWhere.status = { gte: 200, lt: 300 }
             contactWhere.status = 'success'
         } else {
             webhookWhere.NOT = { status: { gte: 200, lt: 300 } }
-            // For contacts, failed status is 'failed' (?)
             contactWhere.status = { not: 'success' }
+            // Bots are always success for now, so hide them on FAILED
+            botWhere.id = 'IMPOSSIBLE'
         }
     }
 
-    // Fetch data
-    // Note: Cross-table pagination is hard. We'll implement a simplified approach:
-    // If specific type is selected, we paginate properly.
-    // If 'ALL', we fetch Top N from both and merge. This means deep pagination for "ALL" might lose some data,
-    // but works for "Recent Activity".
-
-    // Calculate skip/take
+    // Skip/Take
     const skip = (page - 1) * pageSize
 
     let events: EventLog[] = []
@@ -61,14 +63,16 @@ export default async function EventsPage(props: PageProps) {
 
     const fetchWebhooks = type === 'ALL' || type === 'WEBHOOK' || type === 'SEO_AUDIT'
     const fetchContacts = type === 'ALL' || type === 'CONTACT'
+    const fetchBots = type === 'ALL' || type === 'BOT'
 
     if (fetchWebhooks) {
+        // ... (existing webhook logic)
         const [logs, count] = await prisma.$transaction([
             prisma.webhookLog.findMany({
                 where: webhookWhere,
                 orderBy: { createdAt: 'desc' },
-                skip: type === 'ALL' ? 0 : skip, // For ALL, we fetch top N and sort in memory
-                take: type === 'ALL' ? pageSize : pageSize
+                skip: type === 'ALL' ? 0 : skip,
+                take: pageSize
             }),
             prisma.webhookLog.count({ where: webhookWhere })
         ])
@@ -93,12 +97,13 @@ export default async function EventsPage(props: PageProps) {
     }
 
     if (fetchContacts) {
+        // ... (existing contact logic)
         const [logs, count] = await prisma.$transaction([
             prisma.contactSubmission.findMany({
                 where: contactWhere,
                 orderBy: { createdAt: 'desc' },
                 skip: type === 'ALL' ? 0 : skip,
-                take: type === 'ALL' ? pageSize : pageSize
+                take: pageSize
             }),
             prisma.contactSubmission.count({ where: contactWhere })
         ])
@@ -120,18 +125,37 @@ export default async function EventsPage(props: PageProps) {
         totalCount += count
     }
 
-    // Sort and slice for ALL view
+    if (fetchBots) {
+        const [logs, count] = await prisma.$transaction([
+            prisma.botVisit.findMany({
+                where: botWhere,
+                orderBy: { createdAt: 'desc' },
+                skip: type === 'ALL' ? 0 : skip,
+                take: pageSize
+            }),
+            prisma.botVisit.count({ where: botWhere })
+        ])
+
+        logs.forEach(log => {
+            events.push({
+                id: log.id,
+                type: 'BOT',
+                status: 'SUCCESS', // Bot visits are just info
+                date: log.createdAt,
+                summary: `${log.botType} visited ${log.path}`,
+                details: {
+                    userAgent: log.userAgent,
+                    ip: log.ip,
+                    path: log.path
+                }
+            })
+        })
+        totalCount += count
+    }
+
     events.sort((a, b) => b.date.getTime() - a.date.getTime())
 
-    // If in mixed mode, we need to handle pagination artificially for the merged list
-    // This is imperfect but functional for basic usage
     if (type === 'ALL') {
-        // We actually fetched top 50 of each. So we have up to 100 items. 
-        // We just show the top pageSize. 
-        // Real unified pagination requires a Union View.
-        // For now, we just pretend page 1 is accurate. 
-        // If user goes to page 2 in "ALL" mode, it might look weird.
-        // Let's enforce filters for deep pagination? No, let's just show what we have.
         events = events.slice(0, pageSize)
     }
 

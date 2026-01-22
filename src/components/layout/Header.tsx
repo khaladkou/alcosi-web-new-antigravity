@@ -11,9 +11,10 @@ import type { Dictionary } from '@/i18n/get-dictionary'
 interface HeaderProps {
     dictionary: Dictionary['nav']
     common: Dictionary['common']
+    settings?: Record<string, string> // Optional for now
 }
 
-export function Header({ dictionary, common }: HeaderProps) {
+export function Header({ dictionary, common, settings }: HeaderProps) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const params = useParams()
     const locale = params?.locale as string || 'en'

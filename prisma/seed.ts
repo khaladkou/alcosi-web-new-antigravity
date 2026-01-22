@@ -250,12 +250,39 @@ async function main() {
                     contentHtml: t.content,
                     metaTitle: t.title,
                     metaDescription: t.excerpt,
-                    metaDescription: t.excerpt,
                     ogImageUrl: t.ogImageUrl,
                     tags: (t as any).tags || []
                 }
             })
         }
+    }
+
+    // 5. Seed Global Settings
+    console.log('Seeding Global Settings...')
+    const settings = [
+        { key: 'google_analytics_id', value: '' },
+        { key: 'google_tag_manager_id', value: '' },
+        { key: 'facebook_pixel_id', value: '' },
+        { key: 'contact_email', value: 'hello@alcosi.com' },
+        { key: 'contact_phone', value: '+1 (555) 123-4567' },
+        { key: 'social_linkedin', value: 'https://linkedin.com/company/alcosi' },
+        { key: 'social_twitter', value: 'https://twitter.com/alcosi' },
+        { key: 'social_instagram', value: 'https://instagram.com/alcosi' },
+        { key: 'smtp_host', value: '' },
+        { key: 'smtp_port', value: '587' },
+        { key: 'smtp_user', value: '' },
+        { key: 'smtp_pass', value: '' },
+    ]
+
+    for (const s of settings) {
+        await prisma.globalSetting.upsert({
+            where: { key: s.key },
+            update: {}, // Don't overwrite if exists
+            create: {
+                key: s.key,
+                value: s.value
+            }
+        })
     }
 
     console.log('✅ Seeding finished successfully.')

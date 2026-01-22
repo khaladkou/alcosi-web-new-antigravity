@@ -88,6 +88,7 @@ export default function EventsClient({ events, totalCount, pageSize }: EventsCli
                         <DropdownMenuItem onClick={() => updateParams('type', 'SEO_AUDIT')}>SEO Audit</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => updateParams('type', 'WEBHOOK')}>Webhook</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => updateParams('type', 'CONTACT')}>Contact</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => updateParams('type', 'BOT')}>Bot Traffic</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -135,7 +136,8 @@ export default function EventsClient({ events, totalCount, pageSize }: EventsCli
                                         <Badge variant="outline" className={
                                             event.type === 'WEBHOOK' ? 'border-blue-500 text-blue-500' :
                                                 event.type === 'SEO_AUDIT' ? 'border-indigo-500 text-indigo-500' :
-                                                    'border-purple-500 text-purple-500'
+                                                    event.type === 'BOT' ? 'border-orange-500 text-orange-500' :
+                                                        'border-purple-500 text-purple-500'
                                         }>
                                             {event.type}
                                         </Badge>

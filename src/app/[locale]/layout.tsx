@@ -59,6 +59,14 @@ import { Footer } from "@/components/layout/Footer";
 import { getDictionary } from "@/i18n/get-dictionary";
 import type { Locale } from "@/i18n/config";
 
+import { prisma } from "@/lib/db";
+import { detectAndLogBot } from "@/lib/bot-detector";
+import { CookieConsentProvider } from "@/contexts/CookieConsentContext";
+import { CookieConsent } from "@/components/common/CookieConsent";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { GoogleTagManager } from "@/components/analytics/GoogleTagManager";
+import { FacebookPixel } from "@/components/analytics/FacebookPixel";
+
 export default async function RootLayout({
   children,
   params,
@@ -69,16 +77,32 @@ export default async function RootLayout({
   const { locale } = await params;
   const t = await getDictionary(locale as Locale);
 
+  // Server-side Bot Detection
+  await detectAndLogBot();
+
+  // Fetch Global Settings
+  const settings = await prisma.globalSetting.findMany();
+  const settingsMap: Record<string, string> = {};
+  settings.forEach((s) => {
+    settingsMap[s.key] = s.value;
+  });
+
   return (
     <html lang={locale}>
       <body
         className={`${outfit.variable} ${inter.variable} antialiased font-sans bg-background text-foreground flex flex-col min-h-screen`}
       >
-        <Header dictionary={t.nav} common={t.common} />
-        <main className="flex-1 pt-16">
-          {children}
-        </main>
-        <Footer dictionary={t.footer} common={t.common} locale={locale} />
+        <CookieConsentProvider>
+          <Header dictionary={t.nav} common={t.common} settings={settingsMap} />
+          <main className="flex-1 pt-16">
+            {children}
+          </main>
+          <Footer dictionary={t.footer} common={t.common} locale={locale} settings={settingsMap} />
+          <CookieConsent />
+          <GoogleAnalytics gaId={settingsMap['google_analytics_id']} />
+          <GoogleTagManager gtmId={settingsMap['google_tag_manager_id']} />
+          <FacebookPixel pixelId={settingsMap['facebook_pixel_id']} />
+        </CookieConsentProvider>
       </body>
     </html>
   );
