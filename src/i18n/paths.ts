@@ -24,7 +24,7 @@ const paths: PathMap = {
         es: '/servicios/fintech',
         ru: '/uslugi/fintech',
         de: '/leistungen/fintech',
-        pl: '/uslugi/finthey', // Note: Check 'finthey' vs 'fintech' in rewrite? Rewrite said 'finthey' for PL?? 
+        pl: '/uslugi/fintech', // Fixed typo 'finthey' to 'fintech' 
         // Checking rewrite: { source: '/pl/uslugi/fintech', destination: '/pl/services/fintech' } -> Wait.
         // My previous rewrite config for PL:
         // { source: '/pl/uslugi/fintech', destination: '/pl/services/fintech' }

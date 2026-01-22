@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { getAdminPath } from '@/lib/admin-config'
 
 export default function AdminLoginPage() {
+    const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const router = useRouter()
@@ -18,13 +20,13 @@ export default function AdminLoginPage() {
         const res = await fetch('/api/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password })
+            body: JSON.stringify({ username, password })
         })
 
         if (res.ok) {
-            router.push('/admin/dashboard')
+            router.push(`${getAdminPath()}/dashboard`)
         } else {
-            setError('Invalid password')
+            setError('Invalid credentials')
         }
     }
 
@@ -34,6 +36,16 @@ export default function AdminLoginPage() {
                 <h1 className="text-2xl font-bold mb-6 text-center">Admin Access</h1>
 
                 <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="username">Username</Label>
+                        <Input
+                            id="username"
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="Enter admin username..."
+                        />
+                    </div>
                     <div className="space-y-2">
                         <Label htmlFor="password">Password</Label>
                         <Input

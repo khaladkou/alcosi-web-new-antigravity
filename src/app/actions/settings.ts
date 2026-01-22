@@ -13,9 +13,11 @@ export async function updateSettingsAction(formData: FormData) {
         'facebook_pixel_id',
         'contact_email',
         'contact_phone',
+        'contact_google_maps',
         'social_linkedin',
         'social_twitter',
         'social_instagram',
+        'social_youtube',
         'smtp_host',
         'smtp_port',
         'smtp_user',
@@ -38,7 +40,8 @@ export async function updateSettingsAction(formData: FormData) {
         }
 
         await prisma.$transaction(updates)
-        revalidatePath('/admin/settings')
+        const adminPath = process.env.NEXT_PUBLIC_ADMIN_PATH || '/admin'
+        revalidatePath(`${adminPath}/settings`)
         revalidatePath('/', 'layout') // Revalidate whole site as settings might be in footer/header
 
         return { success: true, message: 'Settings updated successfully' }

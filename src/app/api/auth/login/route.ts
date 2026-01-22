@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
     const body = await request.json()
-    const { password } = body
+    const { username, password } = body
 
-    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123' // Default for dev
+    const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin'
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'
 
-    if (password === ADMIN_PASSWORD) {
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
         const response = NextResponse.json({ success: true })
 
         // Set cookie

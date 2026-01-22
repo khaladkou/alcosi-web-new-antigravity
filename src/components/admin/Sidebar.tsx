@@ -14,18 +14,22 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
+import { getAdminPath } from '@/lib/admin-config'
+
+const adminPath = getAdminPath()
+
 const NAV_ITEMS = [
-    { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { label: 'Inbox', href: '/admin/inbox', icon: Activity }, // Or Inbox icon if available, will stick to available imports
-    { label: 'Articles', href: '/admin/articles', icon: FileText },
-    { label: 'Portfolio', href: '/admin/projects', icon: Briefcase },
-    { label: 'Events', href: '/admin/events', icon: Activity },
-    { label: 'Webhooks', href: '/admin/webhooks', icon: Activity },
-    { label: 'SEO Audit', href: '/admin/seo-audit', icon: Activity },
-    { label: 'Redirects', href: '/admin/redirects', icon: Shuffle },
-    { label: 'Legal', href: '/admin/legal', icon: FileText },
-    { label: 'System Check', href: '/admin/system-test', icon: Activity },
-    { label: 'Settings', href: '/admin/settings', icon: Settings },
+    { label: 'Dashboard', href: `${adminPath}/dashboard`, icon: LayoutDashboard },
+    { label: 'Inbox', href: `${adminPath}/inbox`, icon: Activity },
+    { label: 'Articles', href: `${adminPath}/articles`, icon: FileText },
+    { label: 'Portfolio', href: `${adminPath}/projects`, icon: Briefcase },
+    { label: 'Events', href: `${adminPath}/events`, icon: Activity },
+    { label: 'Webhooks', href: `${adminPath}/webhooks`, icon: Activity },
+    { label: 'SEO Audit', href: `${adminPath}/seo-audit`, icon: Activity },
+    { label: 'Redirects', href: `${adminPath}/redirects`, icon: Shuffle },
+    { label: 'Legal', href: `${adminPath}/legal`, icon: FileText },
+    { label: 'System Check', href: `${adminPath}/system-test`, icon: Activity },
+    { label: 'Settings', href: `${adminPath}/settings`, icon: Settings },
 ]
 
 export function Sidebar() {
@@ -34,7 +38,7 @@ export function Sidebar() {
     return (
         <aside className="w-64 bg-card border-r border-border min-h-screen flex flex-col fixed left-0 top-0 h-full">
             <div className="p-6 border-b border-border">
-                <Link href="/admin/dashboard" className="flex items-center gap-2 font-bold text-xl">
+                <Link href={`${adminPath}/dashboard`} className="flex items-center gap-2 font-bold text-xl">
                     <span>Admin Panel</span>
                 </Link>
             </div>
@@ -75,7 +79,7 @@ export function Sidebar() {
                     className="w-full justify-start text-muted-foreground hover:text-destructive"
                     asChild
                 >
-                    <Link href="/admin/login">
+                    <Link href={`${adminPath}/login`}>
                         <LogOut className="mr-2 size-4" /> Logout
                     </Link>
                 </Button>

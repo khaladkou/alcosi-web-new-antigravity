@@ -61,14 +61,27 @@ export async function scanUrl(url: string): Promise<SeoAnalysisResult> {
 
     // Schema.org
     const schemas = doc.querySelectorAll('script[type="application/ld+json"]')
-    const schemaValid = schemas.length > 0
     let validSchemas = 0
-    schemas.forEach(s => {
-        try {
-            JSON.parse(s.textContent || '{}')
-            validSchemas++
-        } catch (e) { }
-    })
+    let schemaValid = false
+
+    if (schemas.length > 0) {
+        schemas.forEach(s => {
+            try {
+                JSON.parse(s.textContent || '{}')
+                validSchemas++
+            } catch (e) { }
+        })
+        schemaValid = validSchemas > 0
+    } else {
+        // Fallback: Check for schema in RSC payload (Next.js streaming)
+        // Look for escaped JSON-LD pattern common in Next.js hydration
+        const rscSchemaMatch = html.match(/application\/ld\+json/) || html.match(/"@context":"https:\/\/schema\.org"/)
+        if (rscSchemaMatch) {
+            schemaValid = true
+            validSchemas = 1 // Approximate
+        }
+    }
+
 
     // OpenGraph
     const ogTags = doc.querySelectorAll('meta[property^="og:"]')

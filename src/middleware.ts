@@ -57,12 +57,38 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(newUrl, 301)
     }
 
-    // 1.5 Admin Authentication
-    if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
-        const adminToken = request.cookies.get('admin_token')
-        if (!adminToken) {
-            const loginUrl = new URL('/admin/login', request.url)
-            return NextResponse.redirect(loginUrl)
+    // 1.5 Admin Authentication & Hidden Path Logic
+    const ADMIN_PATH = process.env.NEXT_PUBLIC_ADMIN_PATH || '/admin'
+    const isSecretPath = pathname.startsWith(ADMIN_PATH)
+    const isDirectAdminPath = pathname.startsWith('/admin')
+
+    // Block direct access to /admin if custom path is set (and we are not in the rewrite loop)
+    // Note: When rewriting, the browser URL stays as ADMIN_PATH, but internal pathname becomes /admin
+    // The middleware might run again? No, usually middleware runs on request. Rewrites don't re-trigger middleware by default unless configured?
+    // Actually, to be safe: If URL starts with /admin AND ADMIN_PATH != /admin -> Block
+    if (ADMIN_PATH !== '/admin' && isDirectAdminPath) {
+        // Return 404 or redirect home
+        return NextResponse.rewrite(new URL('/404', request.url))
+    }
+
+    // Handle Authentication for the Secret Path
+    if (isSecretPath) {
+        // Calculate where we are going internally (relative to admin root)
+        // e.g. /secret/dashboard -> /dashboard
+        const relativePath = pathname.slice(ADMIN_PATH.length)
+        const isLogin = relativePath === '/login' || relativePath.startsWith('/login/')
+
+        if (!isLogin) {
+            const adminToken = request.cookies.get('admin_token')
+            if (!adminToken) {
+                const loginUrl = new URL(`${ADMIN_PATH}/login`, request.url)
+                return NextResponse.redirect(loginUrl)
+            }
+        }
+
+        // Rewrite to internal /admin folder if using custom path
+        if (ADMIN_PATH !== '/admin') {
+            return NextResponse.rewrite(new URL(`/admin${relativePath}`, request.url))
         }
     }
 

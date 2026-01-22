@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import { getAdminPath } from '@/lib/admin-config'
 
 export default async function WebhookLogDetailsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params
@@ -13,11 +14,13 @@ export default async function WebhookLogDetailsPage({ params }: { params: Promis
 
     if (!log) notFound()
 
+    const adminPath = getAdminPath()
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="flex items-center gap-4 mb-8">
                 <Button variant="ghost" asChild>
-                    <Link href="/admin/webhooks"><ArrowLeft className="mr-2 size-4" /> Back to Logs</Link>
+                    <Link href={`${adminPath}/webhooks`}><ArrowLeft className="mr-2 size-4" /> Back to Logs</Link>
                 </Button>
                 <h1 className="text-2xl font-bold">Log Details</h1>
             </div>

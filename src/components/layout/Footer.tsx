@@ -8,7 +8,7 @@ interface FooterProps {
     settings: Record<string, string>
 }
 
-import { Linkedin, Twitter, Instagram } from 'lucide-react'
+import { Linkedin, Twitter, Instagram, Youtube } from 'lucide-react'
 
 export function Footer({ dictionary, common, locale, settings }: FooterProps) {
     const year = new Date().getFullYear()
@@ -79,6 +79,12 @@ export function Footer({ dictionary, common, locale, settings }: FooterProps) {
                             <a href={settings.social_instagram} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                                 <Instagram className="size-5" />
                                 <span className="sr-only">Instagram</span>
+                            </a>
+                        )}
+                        {settings.social_youtube && (
+                            <a href={settings.social_youtube} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                                <Youtube className="size-5" />
+                                <span className="sr-only">YouTube</span>
                             </a>
                         )}
                     </div>

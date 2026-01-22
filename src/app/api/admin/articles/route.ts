@@ -24,7 +24,8 @@ export async function POST(request: NextRequest) {
         // 3. Create Valid Translations
         if (translations && Array.isArray(translations)) {
             for (const t of translations) {
-                if (t.title && t.slug && t.contentHtml) {
+                // Relaxed validation: Allow empty content for drafts
+                if (t.title && t.slug) {
                     await prisma.articleTranslation.create({
                         data: {
                             articleId: article.id,
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
                             slug: t.slug,
                             title: t.title,
                             excerpt: t.excerpt,
-                            contentHtml: t.contentHtml,
+                            contentHtml: t.contentHtml || '', // Ensure empty string if undefined
                             metaTitle: t.metaTitle || t.title,
                             metaDescription: t.metaDescription || t.excerpt,
                             ogImageUrl: t.ogImageUrl,

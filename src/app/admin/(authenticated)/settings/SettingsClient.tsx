@@ -77,6 +77,10 @@ export default function SettingsClient({ initialSettings }: { initialSettings: S
                                 <Label htmlFor="contact_phone">Phone Number</Label>
                                 <Input name="contact_phone" id="contact_phone" defaultValue={getVal('contact_phone')} placeholder="+1 ..." />
                             </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="contact_google_maps">Head Office Google Maps Link</Label>
+                                <Input name="contact_google_maps" id="contact_google_maps" defaultValue={getVal('contact_google_maps')} placeholder="https://maps.google.com/..." />
+                            </div>
                         </CardContent>
                     </Card>
                 </TabsContent>
@@ -99,6 +103,10 @@ export default function SettingsClient({ initialSettings }: { initialSettings: S
                             <div className="space-y-2">
                                 <Label htmlFor="social_instagram">Instagram URL</Label>
                                 <Input name="social_instagram" id="social_instagram" defaultValue={getVal('social_instagram')} placeholder="https://instagram.com/..." />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="social_youtube">YouTube URL</Label>
+                                <Input name="social_youtube" id="social_youtube" defaultValue={getVal('social_youtube')} placeholder="https://youtube.com/..." />
                             </div>
                         </CardContent>
                     </Card>

@@ -13,6 +13,7 @@ import Link from 'next/link'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { locales } from '@/i18n/config'
+import { getAdminPath } from '@/lib/admin-config'
 
 type TranslationData = {
     title: string
@@ -29,6 +30,7 @@ export default function ProjectEditorPage() {
     const router = useRouter()
     const isNew = params?.id === 'new'
     const projectId = params?.id
+    const adminPath = getAdminPath()
 
     const [loading, setLoading] = useState(!isNew)
     const [saving, setSaving] = useState(false)
@@ -146,7 +148,7 @@ export default function ProjectEditorPage() {
                 throw new Error(err.error || 'Failed to save')
             }
 
-            router.push('/admin/projects')
+            router.push(`${adminPath}/projects`)
             router.refresh()
         } catch (error) {
             console.error('Failed to save project', error)
@@ -162,7 +164,7 @@ export default function ProjectEditorPage() {
         <div className="container mx-auto px-4 py-8 max-w-5xl">
             <div className="flex items-center gap-4 mb-8">
                 <Button variant="ghost" size="icon" asChild>
-                    <Link href="/admin/projects">
+                    <Link href={`${adminPath}/projects`}>
                         <ArrowLeft className="size-4" />
                     </Link>
                 </Button>

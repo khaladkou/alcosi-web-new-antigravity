@@ -2,6 +2,7 @@
 
 import { RichTextEditor } from '@/components/admin/RichTextEditor'
 import { ImageUploader } from '@/components/admin/ImageUploader'
+import { getAdminPath } from '@/lib/admin-config'
 
 
 // ... existing imports
@@ -24,6 +25,7 @@ export function ArticleEditor({ article }: { article?: ArticleWithTranslations }
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
     const [activeLocale, setActiveLocale] = useState('en')
+    const adminPath = getAdminPath()
 
     // Default empty state for new article
     const [formData, setFormData] = useState<ArticleWithTranslations>(article || {
@@ -94,7 +96,7 @@ export function ArticleEditor({ article }: { article?: ArticleWithTranslations }
 
             alert('Saved successfully!')
             if (isNew) {
-                router.push('/admin/dashboard')
+                router.push(`${adminPath}/dashboard`)
             } else {
                 router.refresh()
             }
@@ -113,7 +115,7 @@ export function ArticleEditor({ article }: { article?: ArticleWithTranslations }
         try {
             const res = await fetch(`/api/admin/articles/${article.id}`, { method: 'DELETE' })
             if (res.ok) {
-                router.push('/admin/dashboard')
+                router.push(`${adminPath}/dashboard`)
             }
         } catch (e) {
             alert('Error deleting')
@@ -127,7 +129,7 @@ export function ArticleEditor({ article }: { article?: ArticleWithTranslations }
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" asChild>
-                        <Link href="/admin/dashboard"><ArrowLeft className="mr-2 size-4" /> Back</Link>
+                        <Link href={`${adminPath}/dashboard`}><ArrowLeft className="mr-2 size-4" /> Back</Link>
                     </Button>
                     <h1 className="text-2xl font-bold">
                         {article?.id ? `Edit Article #${article.id}` : 'Create New Article'}

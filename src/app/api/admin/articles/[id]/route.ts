@@ -34,11 +34,28 @@ export async function PUT(
                         await tx.articleTranslation.update({
                             where: { id: t.id },
                             data: {
+                                slug: t.slug, // Added missing slug update
                                 title: t.title,
                                 excerpt: t.excerpt,
-                                contentHtml: t.contentHtml,
+                                contentHtml: t.contentHtml || '',
                                 metaTitle: t.metaTitle,
                                 metaDescription: t.metaDescription,
+                                ogImageUrl: t.ogImageUrl,
+                                cardImageUrl: t.cardImageUrl
+                            }
+                        })
+                    } else if (t.locale && t.title && t.slug) {
+                        // Create new translation if it doesn't exist
+                        await tx.articleTranslation.create({
+                            data: {
+                                articleId: parseInt(id),
+                                locale: t.locale,
+                                slug: t.slug,
+                                title: t.title,
+                                excerpt: t.excerpt,
+                                contentHtml: t.contentHtml || '',
+                                metaTitle: t.metaTitle || t.title,
+                                metaDescription: t.metaDescription || t.excerpt,
                                 ogImageUrl: t.ogImageUrl,
                                 cardImageUrl: t.cardImageUrl
                             }
@@ -49,9 +66,16 @@ export async function PUT(
         })
 
         return NextResponse.json({ success: true })
-    } catch (error) {
+    } catch (error: any) {
         console.error('Update Error:', error)
-        return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
+        const message = error.message || 'Failed to update'
+
+        // Handle Prisma Unique Constraint Violation
+        if (error.code === 'P2002') {
+            return NextResponse.json({ error: 'Slug must be unique for this language.' }, { status: 409 })
+        }
+
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }
 

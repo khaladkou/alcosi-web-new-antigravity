@@ -265,6 +265,7 @@ async function main() {
         { key: 'facebook_pixel_id', value: '' },
         { key: 'contact_email', value: 'hello@alcosi.com' },
         { key: 'contact_phone', value: '+1 (555) 123-4567' },
+        { key: 'contact_google_maps', value: 'https://maps.google.com' },
         { key: 'social_linkedin', value: 'https://linkedin.com/company/alcosi' },
         { key: 'social_twitter', value: 'https://twitter.com/alcosi' },
         { key: 'social_instagram', value: 'https://instagram.com/alcosi' },

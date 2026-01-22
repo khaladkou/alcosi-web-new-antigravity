@@ -5,9 +5,24 @@ import { getDictionary } from '@/i18n/get-dictionary'
 import { Locale } from '@/i18n/config'
 import { JsonLd } from '@/components/seo/JsonLd'
 import { getLocalizedPath, getAllLocalizedPaths } from '@/i18n/paths'
+import { prisma } from '@/lib/db'
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'
+
+async function getContactSettings() {
+    const settings = await prisma.globalSetting.findMany({
+        where: {
+            key: { in: ['contact_email', 'contact_phone', 'contact_google_maps'] }
+        }
+    })
+
+    return {
+        email: settings.find(s => s.key === 'contact_email')?.value || 'contact@alcosi.com',
+        phone: settings.find(s => s.key === 'contact_phone')?.value || '+1 (555) 123-4567',
+        maps: settings.find(s => s.key === 'contact_google_maps')?.value || 'https://maps.google.com'
+    }
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
@@ -28,6 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function ContactPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
     const t = await getDictionary(locale as Locale)
+    const settings = await getContactSettings()
 
     return (
         <>
@@ -41,8 +57,8 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                     '@type': 'Organization',
                     name: 'Alcosi Group',
                     url: BASE_URL,
-                    email: 'contact@alcosi.com',
-                    telephone: '+1-555-123-4567'
+                    email: settings.email,
+                    telephone: settings.phone
                 }
             }} />
 
@@ -65,37 +81,52 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                             </p>
 
                             <div className="space-y-8">
-                                <div className="flex items-start gap-4">
-                                    <div className="p-3 rounded-lg bg-primary/10 text-primary">
+                                <a
+                                    href={`mailto:${settings.email}`}
+                                    className="flex items-start gap-4 group hover:opacity-80 transition-opacity"
+                                >
+                                    <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
                                         <Mail className="size-6" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg mb-1">{t.contact.info.email}</h3>
-                                        <p className="text-muted-foreground">contact@alcosi.com</p>
+                                        <p className="text-muted-foreground underline decoration-dotted underline-offset-4">
+                                            {settings.email}
+                                        </p>
                                     </div>
-                                </div>
+                                </a>
 
-                                <div className="flex items-start gap-4">
-                                    <div className="p-3 rounded-lg bg-primary/10 text-primary">
+                                <a
+                                    href={`tel:${settings.phone.replace(/[^0-9+]/g, '')}`}
+                                    className="flex items-start gap-4 group hover:opacity-80 transition-opacity"
+                                >
+                                    <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
                                         <Phone className="size-6" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg mb-1">{t.common.contact_us}</h3>
-                                        <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                                        <p className="text-muted-foreground underline decoration-dotted underline-offset-4">
+                                            {settings.phone}
+                                        </p>
                                     </div>
-                                </div>
+                                </a>
 
-                                <div className="flex items-start gap-4">
-                                    <div className="p-3 rounded-lg bg-primary/10 text-primary">
+                                <a
+                                    href={settings.maps}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-start gap-4 group hover:opacity-80 transition-opacity"
+                                >
+                                    <div className="p-3 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
                                         <MapPin className="size-6" />
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg mb-1">{t.contact.info.office}</h3>
-                                        <p className="text-muted-foreground">
+                                        <p className="text-muted-foreground underline decoration-dotted underline-offset-4 text-left">
                                             {t.contact.info.office_address}
                                         </p>
                                     </div>
-                                </div>
+                                </a>
                             </div>
                         </div>
 
