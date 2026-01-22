@@ -76,7 +76,9 @@ export async function POST(request: NextRequest) {
 
         const { secret, action, data } = result.data
 
-        if (secret !== process.env.WEBHOOK_SECRET) {
+        const EXPECTED_SECRET = process.env.WEBHOOK_SECRET || 'your-secret-key'
+
+        if (secret !== EXPECTED_SECRET) {
             await prisma.webhookLog.update({
                 where: { id: logEntry.id },
                 data: { status: 401, error: 'Unauthorized' }

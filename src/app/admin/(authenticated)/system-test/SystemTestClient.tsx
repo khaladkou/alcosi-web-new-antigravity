@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Play, CheckCircle2, XCircle, Loader2, Activity } from 'lucide-react'
+import { Play, CheckCircle2, XCircle, Loader2, Activity, Copy, Check } from 'lucide-react'
 import {
     runContactTest,
     runArticleCreateTest,
@@ -12,6 +12,30 @@ import {
     runWebhookSuccessTest,
     runWebhookErrorTest
 } from '@/app/actions/system-test'
+
+function CopyButton({ text }: { text: string }) {
+    const [copied, setCopied] = useState(false)
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(text)
+            setCopied(true)
+            setTimeout(() => setCopied(false), 2000)
+        } catch (err) {
+            console.error('Failed to copy:', err)
+        }
+    }
+
+    return (
+        <button
+            onClick={handleCopy}
+            className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+            title="Copy to clipboard"
+        >
+            {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+        </button>
+    )
+}
 
 type TestResult = {
     name: string
@@ -31,6 +55,8 @@ export default function SystemTestClient() {
         { id: '4', name: 'Webhook: Create Article', action: runWebhookSuccessTest },
         { id: '5', name: 'Webhook: Report Error', action: runWebhookErrorTest },
     ]
+
+    const [allCopied, setAllCopied] = useState(false)
 
     const runAllTests = async () => {
         setIsRunning(true)
@@ -60,6 +86,28 @@ export default function SystemTestClient() {
             }
         }
         setIsRunning(false)
+    }
+
+    const copyAllResults = async () => {
+        if (Object.keys(results).length === 0) return
+
+        const formattedResults = tests.map(test => {
+            const result = results[test.id]
+            if (!result) return `${test.id}. ${test.name}: [PENDING]`
+            const status = result.status.toUpperCase()
+            const message = result.message ? ` - ${result.message}` : ''
+            return `${test.id}. ${test.name}: [${status}]${message}`
+        }).join('\n')
+
+        const finalText = `SYSTEM TEST REPORT (${new Date().toLocaleString()})\n\n${formattedResults}`
+
+        try {
+            await navigator.clipboard.writeText(finalText)
+            setAllCopied(true)
+            setTimeout(() => setAllCopied(false), 2000)
+        } catch (err) {
+            console.error('Failed to copy all:', err)
+        }
     }
 
     return (
@@ -109,8 +157,19 @@ export default function SystemTestClient() {
             </Card>
 
             <Card className="h-full bg-slate-950 text-slate-50 border-slate-800">
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between py-4">
                     <CardTitle className="text-sm font-mono text-slate-400">Execution Log</CardTitle>
+                    {Object.keys(results).length > 0 && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={copyAllResults}
+                            className="h-6 text-xs text-slate-400 hover:text-slate-100 px-2"
+                        >
+                            {allCopied ? <Check className="mr-1 size-3" /> : <Copy className="mr-1 size-3" />}
+                            Copy Log
+                        </Button>
+                    )}
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-2 font-mono text-xs">
@@ -122,19 +181,24 @@ export default function SystemTestClient() {
                             if (!result) return null
                             return (
                                 <div key={test.id} className="border-b border-slate-800/50 pb-2 last:border-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <Badge variant="outline" className={`
-                                            ${result.status === 'running' ? 'border-blue-500 text-blue-500' : ''}
-                                            ${result.status === 'success' ? 'border-green-500 text-green-500' : ''}
-                                            ${result.status === 'failed' ? 'border-red-500 text-red-500' : ''}
-                                            bg-transparent text-[10px] h-5 px-1
-                                        `}>
-                                            {result.status.toUpperCase()}
-                                        </Badge>
-                                        <span className="text-slate-300">{test.name}</span>
+                                    <div className="flex items-center gap-2 mb-1 justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="outline" className={`
+                                                ${result.status === 'running' ? 'border-blue-500 text-blue-500' : ''}
+                                                ${result.status === 'success' ? 'border-green-500 text-green-500' : ''}
+                                                ${result.status === 'failed' ? 'border-red-500 text-red-500' : ''}
+                                                bg-transparent text-[10px] h-5 px-1
+                                            `}>
+                                                {result.status.toUpperCase()}
+                                            </Badge>
+                                            <span className="text-slate-300">{test.name}</span>
+                                        </div>
+                                        {result.message && (
+                                            <CopyButton text={result.message} />
+                                        )}
                                     </div>
                                     {result.message && (
-                                        <div className="pl-14 text-slate-500">
+                                        <div className="pl-14 text-slate-500 break-all">
                                             {result.status === 'failed' ? 'Error: ' : '> '}{result.message}
                                         </div>
                                     )}

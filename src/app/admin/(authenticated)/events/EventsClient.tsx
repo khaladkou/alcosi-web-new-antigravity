@@ -207,16 +207,81 @@ export default function EventsClient({ events, totalCount, pageSize }: EventsCli
 
                     <div className="flex-1 overflow-auto bg-slate-950 p-4 rounded-md relative text-slate-50 font-mono text-xs">
                         <Button
-                            size="icon"
+                            size="sm"
                             variant="ghost"
-                            className="absolute top-2 right-2 text-slate-400 hover:text-white"
+                            className="absolute top-2 right-2 text-slate-400 hover:text-white z-10"
                             onClick={() => selectedEvent && handleCopy(JSON.stringify(selectedEvent.details, null, 2))}
                         >
                             {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
                         </Button>
-                        <pre className="whitespace-pre-wrap">
-                            {selectedEvent ? JSON.stringify(selectedEvent.details, null, 2) : ''}
-                        </pre>
+
+                        {selectedEvent && (
+                            <div className="space-y-4">
+                                {selectedEvent.details.url && (
+                                    <div>
+                                        <div className="text-slate-500 mb-1">URL</div>
+                                        <div className="text-blue-400 break-all">{selectedEvent.details.url}</div>
+                                    </div>
+                                )}
+
+                                {selectedEvent.details.method && (
+                                    <div>
+                                        <div className="text-slate-500 mb-1">Method</div>
+                                        <div className="text-yellow-400">{selectedEvent.details.method}</div>
+                                    </div>
+                                )}
+
+                                <div>
+                                    <div className="text-slate-500 mb-1">Status</div>
+                                    <Badge variant={selectedEvent.status === 'SUCCESS' ? 'default' : 'destructive'}
+                                        className={selectedEvent.status === 'SUCCESS' ? 'bg-green-500' : ''}>
+                                        {selectedEvent.status}
+                                    </Badge>
+                                </div>
+
+                                {selectedEvent.details.payload && Object.keys(selectedEvent.details.payload).length > 0 && (
+                                    <div>
+                                        <div className="text-slate-500 mb-1">Payload</div>
+                                        <pre className="bg-slate-900 p-2 rounded overflow-auto border border-slate-800">
+                                            {JSON.stringify(selectedEvent.details.payload, null, 2)}
+                                        </pre>
+                                    </div>
+                                )}
+
+                                {selectedEvent.details.response && (
+                                    <div>
+                                        <div className="text-slate-500 mb-1">Response</div>
+                                        <pre className="bg-slate-900 p-2 rounded overflow-auto border border-slate-800 text-green-300">
+                                            {JSON.stringify(selectedEvent.details.response, null, 2)}
+                                        </pre>
+                                    </div>
+                                )}
+
+                                {selectedEvent.details.error && (
+                                    <div>
+                                        <div className="text-slate-500 mb-1">Error</div>
+                                        <pre className="bg-red-950/30 p-2 rounded overflow-auto border border-red-900/50 text-red-400">
+                                            {typeof selectedEvent.details.error === 'string'
+                                                ? selectedEvent.details.error
+                                                : JSON.stringify(selectedEvent.details.error, null, 2)}
+                                        </pre>
+                                    </div>
+                                )}
+
+                                {/* Fallback for other fields */}
+                                {Object.entries(selectedEvent.details)
+                                    .filter(([key]) => !['url', 'method', 'payload', 'response', 'error'].includes(key))
+                                    .map(([key, value]) => (
+                                        <div key={key}>
+                                            <div className="text-slate-500 mb-1 capitalize">{key}</div>
+                                            <pre className="text-slate-300 whitespace-pre-wrap">
+                                                {typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value)}
+                                            </pre>
+                                        </div>
+                                    ))
+                                }
+                            </div>
+                        )}
                     </div>
                 </DialogContent>
             </Dialog>

@@ -3,24 +3,26 @@
 import { prisma } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://127.0.0.1:3005'
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'your-secret-key'
 
 // 1. Contact Form Test
 export async function runContactTest() {
+    const url = `${BASE_URL}/api/contact`
+    const payload = {
+        name: 'System Test',
+        email: 'test@system.local',
+        subject: '[SYSTEM TEST] verification',
+        message: 'This is a test message from the System Health Check.'
+    }
     try {
-        const res = await fetch(`${BASE_URL}/api/contact`, {
+        const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: 'System Test',
-                email: 'test@system.local',
-                subject: '[SYSTEM TEST] verification',
-                message: 'This is a test message from the System Health Check.'
-            })
+            body: JSON.stringify(payload)
         })
 
-        if (!res.ok) throw new Error(`API Error: ${res.status}`)
+        if (!res.ok) throw new Error(`API Error: ${res.status} ${res.statusText}`)
 
         // Verify DB
         const submission = await prisma.contactSubmission.findFirst({
@@ -32,7 +34,9 @@ export async function runContactTest() {
 
         return { success: true, message: `Created submission ID: ${submission.id}` }
     } catch (e: any) {
-        return { success: false, error: e.message }
+        // Although contact API logs internally, we can log the test failure too if needed.
+        // For now, relying on return value.
+        return { success: false, error: `${e.message} (URL: ${url})` }
     }
 }
 
@@ -55,8 +59,32 @@ export async function runArticleCreateTest() {
                 }
             }
         })
+
+        // Log to Event Log
+        await prisma.webhookLog.create({
+            data: {
+                provider: 'SYSTEM_TEST',
+                method: 'INTERNAL',
+                url: 'runArticleCreateTest',
+                payload: { articleId: article.id },
+                status: 200,
+                response: { success: true, id: article.id }
+            }
+        })
+
         return { success: true, message: `Created Article ID: ${article.id}` }
     } catch (e: any) {
+        // Log Failure
+        await prisma.webhookLog.create({
+            data: {
+                provider: 'SYSTEM_TEST',
+                method: 'INTERNAL',
+                url: 'runArticleCreateTest',
+                payload: {},
+                status: 500,
+                error: e.message
+            }
+        })
         return { success: false, error: e.message }
     }
 }
@@ -75,67 +103,92 @@ export async function runViewTest() {
             data: { articleId: article.id }
         })
 
+        // Log to Event Log
+        await prisma.webhookLog.create({
+            data: {
+                provider: 'SYSTEM_TEST',
+                method: 'INTERNAL',
+                url: 'runViewTest',
+                payload: { articleId: article.id },
+                status: 200,
+                response: { success: true }
+            }
+        })
+
         return { success: true, message: `Logged view for Article ID: ${article.id}` }
     } catch (e: any) {
+        await prisma.webhookLog.create({
+            data: {
+                provider: 'SYSTEM_TEST',
+                method: 'INTERNAL',
+                url: 'runViewTest',
+                payload: {},
+                status: 500,
+                error: e.message
+            }
+        })
         return { success: false, error: e.message }
     }
 }
 
 // 4. Webhook Success Test
 export async function runWebhookSuccessTest() {
-    try {
-        const payload = {
-            secret: WEBHOOK_SECRET,
-            action: 'create',
-            data: {
-                slug: 'webhook-test-' + Date.now(),
-                locale: 'en',
-                title: '[SYSTEM TEST] Webhook Article',
-                contentHtml: '<p>Created via Webhook Test</p>',
-                metaTitle: 'Webhook Test',
-                status: 'published',
-                publishedAt: new Date().toISOString()
-            }
+    const url = `${BASE_URL}/api/webhooks/content`
+    const payload = {
+        secret: WEBHOOK_SECRET,
+        action: 'create',
+        data: {
+            slug: 'webhook-test-' + Date.now(),
+            locale: 'en',
+            title: '[SYSTEM TEST] Webhook Article',
+            contentHtml: '<p>Created via Webhook Test</p>',
+            metaTitle: 'Webhook Test',
+            status: 'published',
+            publishedAt: new Date().toISOString()
         }
+    }
 
-        const res = await fetch(`${BASE_URL}/api/webhooks/content`, {
+    try {
+        const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
 
-        if (!res.ok) throw new Error(`Webhook API Error: ${res.status}`)
+        if (!res.ok) throw new Error(`Webhook API Error: ${res.status} ${res.statusText}`)
 
         return { success: true, message: 'Webhook sent successfully (200 OK)' }
     } catch (e: any) {
-        return { success: false, error: e.message }
+        const errorMsg = `${e.message} (URL: ${url})`
+        // We can't log to DB easily here if DB write failed, but we return explicit error
+        return { success: false, error: errorMsg }
     }
 }
 
 // 5. Webhook Error Test
 export async function runWebhookErrorTest() {
-    try {
-        const payload = {
-            secret: WEBHOOK_SECRET,
-            action: 'error',
-            data: {
-                error: 'Simulated Error from System Test',
-                details: { reason: 'Testing error reporting flow' },
-                slug: 'failed-generation-test'
-            }
+    const url = `${BASE_URL}/api/webhooks/content`
+    const payload = {
+        secret: WEBHOOK_SECRET,
+        action: 'error',
+        data: {
+            error: 'Simulated Error from System Test',
+            details: { reason: 'Testing error reporting flow' },
+            slug: 'failed-generation-test'
         }
-
-        const res = await fetch(`${BASE_URL}/api/webhooks/content`, {
+    }
+    try {
+        const res = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
 
         // The API returns 200 even for error reports (it logged it successfully)
-        if (!res.ok) throw new Error(`Webhook API Failed: ${res.status}`)
+        if (!res.ok) throw new Error(`Webhook API Failed: ${res.status} ${res.statusText}`)
 
         return { success: true, message: 'Error Report sent successfully' }
     } catch (e: any) {
-        return { success: false, error: e.message }
+        return { success: false, error: `${e.message} (URL: ${url})` }
     }
 }
