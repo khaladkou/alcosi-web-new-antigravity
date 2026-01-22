@@ -14,6 +14,18 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Save, Trash2, ArrowLeft, Plus } from 'lucide-react'
 import Link from 'next/link'
+import { toast } from 'sonner'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 type ArticleWithTranslations = {
     id?: number
@@ -94,14 +106,14 @@ export function ArticleEditor({ article }: { article?: ArticleWithTranslations }
 
             if (!res.ok) throw new Error('Failed to save')
 
-            alert('Saved successfully!')
+            toast.success('Saved successfully!')
             if (isNew) {
                 router.push(`${adminPath}/dashboard`)
             } else {
                 router.refresh()
             }
         } catch (e) {
-            alert('Error saving')
+            toast.error('Error saving')
             console.error(e)
         } finally {
             setIsLoading(false)
@@ -110,15 +122,15 @@ export function ArticleEditor({ article }: { article?: ArticleWithTranslations }
 
     const handleDelete = async () => {
         if (!article?.id) return
-        if (!confirm('Are you sure you want to delete this article?')) return
 
         try {
             const res = await fetch(`/api/admin/articles/${article.id}`, { method: 'DELETE' })
             if (res.ok) {
+                toast.success('Deleted successfully')
                 router.push(`${adminPath}/dashboard`)
             }
         } catch (e) {
-            alert('Error deleting')
+            toast.error('Error deleting')
         }
     }
 
@@ -137,9 +149,27 @@ export function ArticleEditor({ article }: { article?: ArticleWithTranslations }
                 </div>
                 <div className="flex items-center gap-2">
                     {article?.id && (
-                        <Button variant="destructive" onClick={handleDelete}>
-                            <Trash2 className="size-4 mr-2" /> Delete
-                        </Button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive">
+                                    <Trash2 className="size-4 mr-2" /> Delete
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete this article.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-sm">
+                                        Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     )}
                     <Button onClick={handleSave} disabled={isLoading}>
                         <Save className="size-4 mr-2" /> {isLoading ? 'Saving...' : 'Save Changes'}

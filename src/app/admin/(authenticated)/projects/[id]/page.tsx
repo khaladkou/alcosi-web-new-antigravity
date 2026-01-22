@@ -12,6 +12,7 @@ import { ArrowLeft, Save, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { toast } from 'sonner'
 import { locales } from '@/i18n/config'
 import { getAdminPath } from '@/lib/admin-config'
 
@@ -148,11 +149,12 @@ export default function ProjectEditorPage() {
                 throw new Error(err.error || 'Failed to save')
             }
 
+            toast.success('Saved successfully')
             router.push(`${adminPath}/projects`)
             router.refresh()
         } catch (error) {
             console.error('Failed to save project', error)
-            alert(error instanceof Error ? error.message : 'Error saving project')
+            toast.error(error instanceof Error ? error.message : 'Error saving project')
         } finally {
             setSaving(false)
         }

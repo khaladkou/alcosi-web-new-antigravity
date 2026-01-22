@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { toast } from 'sonner'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Send } from 'lucide-react'
@@ -34,7 +35,7 @@ export function ContactForm({ dictionary }: ContactFormProps) {
 
             setIsSuccess(true)
         } catch (error) {
-            alert('Something went wrong. Please try again.')
+            toast.error('Something went wrong. Please try again.')
         } finally {
             setIsSubmitting(false)
         }

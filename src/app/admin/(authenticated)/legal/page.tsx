@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { RichTextEditor } from '@/components/admin/RichTextEditor'
 import { Loader2, Save } from 'lucide-react'
@@ -45,9 +46,9 @@ export default function LegalSettingsPage() {
             })
 
             if (!res.ok) throw new Error('Failed to save')
-            alert('Legal pages updated successfully')
+            toast.success('Legal pages updated successfully')
         } catch (error) {
-            alert('Error saving legal pages')
+            toast.error('Error saving legal pages')
         } finally {
             setIsSaving(false)
         }

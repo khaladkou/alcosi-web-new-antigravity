@@ -66,6 +66,7 @@ import { CookieConsent } from "@/components/common/CookieConsent";
 import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 import { GoogleTagManager } from "@/components/analytics/GoogleTagManager";
 import { FacebookPixel } from "@/components/analytics/FacebookPixel";
+import { Toaster } from 'sonner'
 
 export default async function RootLayout({
   children,
@@ -102,6 +103,7 @@ export default async function RootLayout({
           <GoogleAnalytics gaId={settingsMap['google_analytics_id']} />
           <GoogleTagManager gtmId={settingsMap['google_tag_manager_id']} />
           <FacebookPixel pixelId={settingsMap['facebook_pixel_id']} />
+          <Toaster richColors />
         </CookieConsentProvider>
       </body>
     </html>

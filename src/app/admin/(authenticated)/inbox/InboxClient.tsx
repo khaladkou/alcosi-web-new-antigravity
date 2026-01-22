@@ -184,7 +184,7 @@ export default function InboxClient({ initialSubmissions }: InboxClientProps) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-sm">
                             Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>

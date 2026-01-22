@@ -10,6 +10,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Plus, Pencil, Trash2, Search, Shuffle, ExternalLink } from 'lucide-react'
 
+import { toast } from 'sonner'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
 interface Redirect {
     id: number
     source: string
@@ -28,6 +40,9 @@ export default function RedirectsPage() {
     const [isEditing, setIsEditing] = useState(false)
     const [currentItem, setCurrentItem] = useState<Partial<Redirect>>({ code: 301, isActive: true })
     const [saving, setSaving] = useState(false)
+
+    // Delete State
+    const [deleteId, setDeleteId] = useState<number | null>(null)
 
     useEffect(() => {
         fetchRedirects()
@@ -65,29 +80,37 @@ export default function RedirectsPage() {
 
             if (!res.ok) {
                 const err = await res.json()
-                alert(err.error || 'Failed to save')
+                toast.error(err.error || 'Failed to save')
                 return
             }
 
+            toast.success('Saved successfully')
             await fetchRedirects()
             setIsEditing(false)
             setCurrentItem({ code: 301, isActive: true })
         } catch (error) {
             console.error(error)
-            alert('Error saving redirect')
+            toast.error('Error saving redirect')
         } finally {
             setSaving(false)
         }
     }
 
-    const handleDelete = async (id: number) => {
-        if (!confirm('Are you sure you want to delete this redirect?')) return
+    const confirmDelete = (id: number) => {
+        setDeleteId(id)
+    }
+
+    const handleDelete = async () => {
+        if (!deleteId) return
         try {
-            await fetch('/api/admin/redirects/' + id, { method: 'DELETE' })
-            setRedirects(prev => prev.filter(r => r.id !== id))
+            await fetch('/api/admin/redirects/' + deleteId, { method: 'DELETE' })
+            setRedirects(prev => prev.filter(r => r.id !== deleteId))
+            toast.success('Deleted successfully')
         } catch (error) {
             console.error(error)
-            alert('Failed to delete')
+            toast.error('Failed to delete')
+        } finally {
+            setDeleteId(null)
         }
     }
 
@@ -176,6 +199,23 @@ export default function RedirectsPage() {
                 </DialogContent>
             </Dialog>
 
+            <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete this redirect rule.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-sm">
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             <Card>
                 <CardContent>
                     <Table>
@@ -231,7 +271,7 @@ export default function RedirectsPage() {
                                             <Button variant="ghost" size="sm" onClick={() => openEdit(r)}>
                                                 <Pencil className="size-4" />
                                             </Button>
-                                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => handleDelete(r.id)}>
+                                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => confirmDelete(r.id)}>
                                                 <Trash2 className="size-4" />
                                             </Button>
                                         </TableCell>

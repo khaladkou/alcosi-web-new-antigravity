@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import ImageExtension from '@tiptap/extension-image'
 import LinkExtension from '@tiptap/extension-link'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import {
     Bold, Italic, List, ListOrdered, Quote,
     Undo, Redo, Image as ImageIcon, Link as LinkIcon
@@ -67,7 +68,7 @@ export function RichTextEditor({ value, onChange, className = '' }: RichTextEdit
                         editor?.chain().focus().setImage({ src: data.url }).run()
                     }
                 } catch (e) {
-                    alert('Failed to upload image')
+                    toast.error('Failed to upload image')
                 }
             }
         }

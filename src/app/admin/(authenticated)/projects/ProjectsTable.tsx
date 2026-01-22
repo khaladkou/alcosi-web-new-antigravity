@@ -18,21 +18,25 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Trash2, Edit, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { deleteArticlesAction } from '@/app/actions/articles'
+import { deleteProjectsAction } from '@/app/actions/projects'
 import { getAdminPath } from '@/lib/admin-config'
+import { Badge } from '@/components/ui/badge'
 
-type Article = {
+type Project = {
     id: number
     status: string
-    updatedAt: Date
+    imageUrl: string | null
+    createdAt: Date
     translations: {
         id: number
         locale: string
         title: string
+        slug: string
+        category: string
     }[]
 }
 
-export default function ArticlesTable({ articles }: { articles: Article[] }) {
+export default function ProjectsTable({ projects }: { projects: Project[] }) {
     const router = useRouter()
     const [selectedIds, setSelectedIds] = useState<number[]>([])
     const [isDeleting, setIsDeleting] = useState(false)
@@ -41,7 +45,7 @@ export default function ArticlesTable({ articles }: { articles: Article[] }) {
     // Selection Handlers
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
-            setSelectedIds(articles.map(a => a.id))
+            setSelectedIds(projects.map(p => p.id))
         } else {
             setSelectedIds([])
         }
@@ -60,7 +64,7 @@ export default function ArticlesTable({ articles }: { articles: Article[] }) {
         if (selectedIds.length === 0) return
 
         setIsDeleting(true)
-        const res = await deleteArticlesAction(selectedIds)
+        const res = await deleteProjectsAction(selectedIds)
         setIsDeleting(false)
 
         if (res.success) {
@@ -72,8 +76,7 @@ export default function ArticlesTable({ articles }: { articles: Article[] }) {
         }
     }
 
-    const allSelected = articles.length > 0 && selectedIds.length === articles.length
-    const indeterminate = selectedIds.length > 0 && selectedIds.length < articles.length
+    const allSelected = projects.length > 0 && selectedIds.length === projects.length
 
     return (
         <div className="space-y-4">
@@ -94,13 +97,13 @@ export default function ArticlesTable({ articles }: { articles: Article[] }) {
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete {selectedIds.length} article(s) and their translations.
+                                    This action cannot be undone. This will permanently delete {selectedIds.length} project(s) and their translations.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction onClick={(e) => {
-                                    e.preventDefault() // Prevent auto-close to show loading state if needed, though we just call handler
+                                    e.preventDefault()
                                     handleDelete()
                                 }} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground shadow-sm">
                                     {isDeleting ? 'Deleting...' : 'Delete'}
@@ -122,53 +125,73 @@ export default function ArticlesTable({ articles }: { articles: Article[] }) {
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSelectAll(e.target.checked)}
                                 />
                             </th>
-                            <th className="p-4 font-medium">ID</th>
+                            <th className="p-4 font-medium">Image</th>
                             <th className="p-4 font-medium">Title (EN)</th>
+                            <th className="p-4 font-medium">Category</th>
                             <th className="p-4 font-medium">Status</th>
                             <th className="p-4 font-medium">Languages</th>
-                            <th className="p-4 font-medium">Last Updated</th>
+                            <th className="p-4 font-medium">Created</th>
                             <th className="p-4 font-medium text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {articles.map(article => {
-                            const enTranslation = article.translations.find(t => t.locale === 'en')
-                            const isSelected = selectedIds.includes(article.id)
+                        {projects.map(project => {
+                            const enTranslation = project.translations.find(t => t.locale === 'en')
+                            // Fallback to first translation if EN missing
+                            const mainTranslation = enTranslation || project.translations[0]
+                            const isSelected = selectedIds.includes(project.id)
 
                             return (
                                 <tr
-                                    key={article.id}
+                                    key={project.id}
                                     className={`border-b border-border last:border-0 hover:bg-secondary/20 transition-colors ${isSelected ? 'bg-secondary/30' : ''}`}
                                 >
                                     <td className="p-4">
                                         <Checkbox
                                             checked={isSelected}
-                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSelectOne(article.id, e.target.checked)}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSelectOne(project.id, e.target.checked)}
                                         />
                                     </td>
-                                    <td className="p-4 font-mono text-sm text-muted-foreground">#{article.id}</td>
+                                    <td className="p-4">
+                                        <div className="size-10 rounded bg-secondary/30 overflow-hidden relative">
+                                            {project.imageUrl && (
+                                                <img
+                                                    src={project.imageUrl}
+                                                    alt=""
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            )}
+                                        </div>
+                                    </td>
                                     <td className="p-4 font-medium">
-                                        {enTranslation?.title || <span className="text-muted-foreground italic">No English Title</span>}
+                                        {mainTranslation?.title || <span className="text-muted-foreground italic">No Title</span>}
+                                        {mainTranslation?.slug && (
+                                            <div className="text-xs text-muted-foreground font-mono mt-0.5">/{mainTranslation.slug}</div>
+                                        )}
                                     </td>
                                     <td className="p-4">
-                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${article.status === 'published' ? 'bg-green-500/10 text-green-600' : 'bg-yellow-500/10 text-yellow-600'
-                                            }`}>
-                                            {article.status}
-                                        </span>
+                                        {mainTranslation?.category && (
+                                            <Badge variant="outline">{mainTranslation.category}</Badge>
+                                        )}
                                     </td>
-                                    <td className="p-4 flex gap-1">
-                                        {article.translations.map(t => (
-                                            <span key={t.id} className="uppercase text-xs bg-secondary text-foreground px-1.5 py-0.5 rounded border border-border">
+                                    <td className="p-4">
+                                        <Badge variant={project.status === 'published' ? 'default' : 'secondary'}>
+                                            {project.status}
+                                        </Badge>
+                                    </td>
+                                    <td className="p-4 flex gap-1 flex-wrap max-w-[150px]">
+                                        {project.translations.map(t => (
+                                            <span key={t.id} className="uppercase text-[10px] bg-secondary text-foreground px-1 py-0.5 rounded border border-border">
                                                 {t.locale}
                                             </span>
                                         ))}
                                     </td>
                                     <td className="p-4 text-sm text-muted-foreground">
-                                        {new Date(article.updatedAt).toLocaleDateString()}
+                                        {new Date(project.createdAt).toLocaleDateString()}
                                     </td>
                                     <td className="p-4 text-right">
                                         <Button variant="ghost" size="sm" asChild>
-                                            <Link href={`${adminPath}/articles/${article.id}`}>
+                                            <Link href={`${adminPath}/projects/${project.id}`}>
                                                 <Edit className="size-4" />
                                             </Link>
                                         </Button>
@@ -178,9 +201,9 @@ export default function ArticlesTable({ articles }: { articles: Article[] }) {
                         })}
                     </tbody>
                 </table>
-                {articles.length === 0 && (
+                {projects.length === 0 && (
                     <div className="p-12 text-center text-muted-foreground">
-                        No articles found.
+                        No projects found.
                     </div>
                 )}
             </div>

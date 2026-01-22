@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
 import Image from 'next/image'
@@ -42,7 +43,7 @@ export function ImageUploader({ value, onChange, className = '' }: ImageUploader
             onChange(data.url)
         } catch (error) {
             console.error(error)
-            alert('Failed to upload image')
+            toast.error('Failed to upload image')
         } finally {
             setIsUploading(false)
         }
