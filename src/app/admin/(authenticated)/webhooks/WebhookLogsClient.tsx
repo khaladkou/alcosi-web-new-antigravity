@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { WebhookLog } from '@prisma/client'
+import { WebhookLog, EventLog } from '@prisma/client'
+import { getWebhookEvents } from '@/app/actions/webhook-logs'
 import {
     Table,
     TableBody,
@@ -34,9 +35,25 @@ export default function WebhookLogsClient({ logs, totalCount, pageSize }: Webhoo
     const searchParams = useSearchParams()
     const page = Number(searchParams.get('page')) || 1
     const [selectedLog, setSelectedLog] = useState<WebhookLog | null>(null)
+    const [events, setEvents] = useState<EventLog[]>([])
+    const [loadingEvents, setLoadingEvents] = useState(false)
+    const [isPending, startTransition] = useTransition()
     const [copied, setCopied] = useState(false)
+    const [activeTab, setActiveTab] = useState<'details' | 'trace'>('details')
 
     const totalPages = Math.ceil(totalCount / pageSize)
+
+    // Fetch events when selectedLog changes
+    useEffect(() => {
+        if (selectedLog?.requestId) {
+            setLoadingEvents(true)
+            getWebhookEvents(selectedLog.requestId)
+                .then(setEvents)
+                .finally(() => setLoadingEvents(false))
+        } else {
+            setEvents([])
+        }
+    }, [selectedLog])
 
     const updatePage = (newPage: number) => {
         const params = new URLSearchParams(searchParams.toString())
@@ -95,7 +112,7 @@ export default function WebhookLogsClient({ logs, totalCount, pageSize }: Webhoo
                                         )}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <Button size="icon" variant="ghost" onClick={() => setSelectedLog(log)}>
+                                        <Button size="icon" variant="ghost" onClick={() => { setSelectedLog(log); setActiveTab('details'); }}>
                                             <Eye className="size-4" />
                                         </Button>
                                     </TableCell>
@@ -106,7 +123,7 @@ export default function WebhookLogsClient({ logs, totalCount, pageSize }: Webhoo
                 </Table>
             </div>
 
-            {/* Pagination */}
+            {/* Pagination ... */}
             <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
                     Page {page} of {totalPages || 1} ({totalCount} items)
@@ -135,54 +152,116 @@ export default function WebhookLogsClient({ logs, totalCount, pageSize }: Webhoo
             <Dialog open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
                 <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2">
-                            Webhook Details
-                            {selectedLog && (
-                                <Badge variant={selectedLog.status >= 200 && selectedLog.status < 300 ? 'default' : 'destructive'}>
-                                    Status: {selectedLog.status}
-                                </Badge>
-                            )}
+                        <DialogTitle className="flex items-center gap-2 justify-between mr-8">
+                            <div className="flex items-center gap-2">
+                                Webhook Details
+                                {selectedLog && (
+                                    <Badge variant={selectedLog.status >= 200 && selectedLog.status < 300 ? 'default' : 'destructive'}>
+                                        Status: {selectedLog.status}
+                                    </Badge>
+                                )}
+                            </div>
+                            {/* Tabs */}
+                            <div className="flex bg-muted rounded-lg p-1 text-xs">
+                                <button
+                                    onClick={() => setActiveTab('details')}
+                                    className={`px-3 py-1 rounded-md transition-all ${activeTab === 'details' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                >
+                                    Details
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('trace')}
+                                    className={`px-3 py-1 rounded-md transition-all ${activeTab === 'trace' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                >
+                                    Trace Logs
+                                </button>
+                            </div>
                         </DialogTitle>
                         <DialogDescription>
                             {selectedLog && new Date(selectedLog.createdAt).toLocaleString()} — {selectedLog?.url}
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex-1 overflow-auto bg-slate-950 p-4 rounded-md relative text-slate-50 font-mono text-xs space-y-4">
-                        <Button
-                            size="icon"
-                            variant="ghost"
-                            className="absolute top-2 right-2 text-slate-400 hover:text-white"
-                            onClick={() => selectedLog && handleCopy(JSON.stringify(selectedLog.payload, null, 2))}
-                        >
-                            {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
-                        </Button>
+                    {activeTab === 'details' ? (
+                        <div className="flex-1 overflow-auto bg-slate-950 p-4 rounded-md relative text-slate-50 font-mono text-xs space-y-4">
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                className="absolute top-2 right-2 text-slate-400 hover:text-white"
+                                onClick={() => selectedLog && handleCopy(JSON.stringify(selectedLog.payload, null, 2))}
+                            >
+                                {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
+                            </Button>
 
-                        <div>
-                            <h4 className="text-slate-400 font-bold mb-1 uppercase text-[10px] tracking-wider">Payload</h4>
-                            <pre className="whitespace-pre-wrap text-green-400">
-                                {selectedLog ? JSON.stringify(selectedLog.payload, null, 2) : ''}
-                            </pre>
+                            <div>
+                                <h4 className="text-slate-400 font-bold mb-1 uppercase text-[10px] tracking-wider">Payload</h4>
+                                <pre className="whitespace-pre-wrap text-green-400">
+                                    {selectedLog ? JSON.stringify(selectedLog.payload, null, 2) : ''}
+                                </pre>
+                            </div>
+
+                            {selectedLog?.response && (
+                                <div className="border-t border-slate-800 pt-4">
+                                    <h4 className="text-slate-400 font-bold mb-1 uppercase text-[10px] tracking-wider">Response</h4>
+                                    <pre className="whitespace-pre-wrap text-blue-300">
+                                        {JSON.stringify(selectedLog.response, null, 2)}
+                                    </pre>
+                                </div>
+                            )}
+
+                            {selectedLog?.error && (
+                                <div className="border-t border-slate-800 pt-4">
+                                    <h4 className="text-slate-400 font-bold mb-1 uppercase text-[10px] tracking-wider">Error</h4>
+                                    <pre className="whitespace-pre-wrap text-red-400">
+                                        {selectedLog.error}
+                                    </pre>
+                                </div>
+                            )}
                         </div>
-
-                        {selectedLog?.response && (
-                            <div className="border-t border-slate-800 pt-4">
-                                <h4 className="text-slate-400 font-bold mb-1 uppercase text-[10px] tracking-wider">Response</h4>
-                                <pre className="whitespace-pre-wrap text-blue-300">
-                                    {JSON.stringify(selectedLog.response, null, 2)}
-                                </pre>
-                            </div>
-                        )}
-
-                        {selectedLog?.error && (
-                            <div className="border-t border-slate-800 pt-4">
-                                <h4 className="text-slate-400 font-bold mb-1 uppercase text-[10px] tracking-wider">Error</h4>
-                                <pre className="whitespace-pre-wrap text-red-400">
-                                    {selectedLog.error}
-                                </pre>
-                            </div>
-                        )}
-                    </div>
+                    ) : (
+                        <div className="flex-1 overflow-auto border rounded-md p-0">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow className="bg-muted/50">
+                                        <TableHead className="w-[140px]">Time</TableHead>
+                                        <TableHead className="w-[100px]">Level</TableHead>
+                                        <TableHead>Message</TableHead>
+                                        <TableHead>Metadata</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {loadingEvents ? (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="h-24 text-center">Loading trace...</TableCell>
+                                        </TableRow>
+                                    ) : events.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                                                No trace events found for this request.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        events.map(evt => (
+                                            <TableRow key={evt.id}>
+                                                <TableCell className="text-xs font-mono text-muted-foreground">
+                                                    {new Date(evt.createdAt).toLocaleTimeString()}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={evt.level === 'error' ? 'destructive' : evt.level === 'warn' ? 'secondary' : 'outline'}>
+                                                        {evt.level}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="font-medium text-sm">{evt.message}</TableCell>
+                                                <TableCell className="text-xs font-mono max-w-[200px] truncate" title={JSON.stringify(evt.metadata, null, 2)}>
+                                                    {evt.metadata ? JSON.stringify(evt.metadata) : '-'}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

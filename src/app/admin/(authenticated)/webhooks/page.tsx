@@ -4,6 +4,9 @@ import Link from 'next/link'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import WebhookLogsClient from './WebhookLogsClient'
+import { CopyButton } from '@/components/common/CopyButton'
+import WebhookSecretManager from './WebhookSecretManager'
+import { getWebhookSecret } from '@/app/actions/settings'
 
 // Force dynamic for logs
 export const dynamic = 'force-dynamic'
@@ -25,6 +28,8 @@ export default async function WebhookLogsPage({
         }),
         prisma.webhookLog.count()
     ])
+
+    const initialSecret = await getWebhookSecret()
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -50,13 +55,17 @@ export default async function WebhookLogsPage({
                     <div className="grid gap-6 md:grid-cols-2">
                         <div>
                             <label className="text-sm font-medium text-muted-foreground block mb-2">Endpoint URL</label>
-                            <code className="block w-full p-3 bg-secondary rounded-md font-mono text-sm break-all">
-                                {process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com'}/api/webhooks/content
-                            </code>
-                            <div className="mt-4 text-sm text-muted-foreground space-y-2">
-                                <p>Send <b>POST</b> requests to this URL.</p>
-                                <p>Authenticate using your <code>WEBHOOK_SECRET</code> inside the JSON body.</p>
+                            <div className="relative group mb-6">
+                                <code className="block w-full p-3 pr-10 bg-secondary rounded-md font-mono text-sm break-all">
+                                    {(process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com') + '/api/webhooks/content'}
+                                </code>
+                                <CopyButton
+                                    text={(process.env.NEXT_PUBLIC_BASE_URL || 'https://alcosi.com') + '/api/webhooks/content'}
+                                    className="absolute top-1/2 -translate-y-1/2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 backdrop-blur-sm"
+                                />
                             </div>
+
+                            <WebhookSecretManager initialSecret={initialSecret} />
                         </div>
 
                         <div>
@@ -69,18 +78,55 @@ export default async function WebhookLogsPage({
                                 <TabsContent value="create">
                                     <pre className="block w-full p-3 bg-secondary rounded-md font-mono text-[10px] overflow-x-auto h-[250px]">
                                         {JSON.stringify({
-                                            "secret": "your-secret-key",
-                                            "action": "create",
-                                            "data": {
-                                                "slug": "ai-future-trends",
-                                                "locale": "en",
-                                                "title": "Future Trends in AI",
-                                                "excerpt": "A deep dive into 2026 AI trends.",
-                                                "contentHtml": "<p>Content goes here...</p>",
-                                                "metaTitle": "AI Trends 2026",
-                                                "metaDescription": "Learn about AI trends.",
-                                                "status": "published",
-                                                "publishedAt": "2026-01-21T10:00:00Z"
+                                            "status": "success",
+                                            "tenant_id": 3,
+                                            "entry_id": 123,
+                                            "article_id": 456,
+                                            "article_slug": "sample-article",
+                                            "article_title": "Sample Article",
+                                            "generated_at": "2025-01-10T12:00:00Z",
+                                            "article": {
+                                                "id": 456,
+                                                "tenant_id": 3,
+                                                "title": "Sample Article",
+                                                "slug": "sample-article",
+                                                "content": "This is a single-sentence article.",
+                                                "excerpt": "This is a single-sentence article.",
+                                                "meta_description": "This is a single-sentence article.",
+                                                "hero_image_url": "/static/generated_images/sample_hero.jpg",
+                                                "hero_image_alt": "Sample hero image",
+                                                "content_images": [
+                                                    {
+                                                        "url": "/static/generated_images/sample_content.jpg",
+                                                        "placement": "body",
+                                                        "artifact": {
+                                                            "url": "/static/generated_images/sample_content.jpg",
+                                                            "mime_type": "image/jpeg",
+                                                            "size_bytes": 1024,
+                                                            "base64": "..."
+                                                        }
+                                                    }
+                                                ],
+                                                "translations": {
+                                                    "en": {
+                                                        "language": "en",
+                                                        "content": "This is a single-sentence article.",
+                                                        "translated_at": "2025-01-10T12:00:00Z"
+                                                    },
+                                                    "de": {
+                                                        "language": "de",
+                                                        "content": "Dies ist ein Beispielsatz.",
+                                                        "translated_at": "2025-01-10T12:00:00Z"
+                                                    }
+                                                }
+                                            },
+                                            "artifacts": {
+                                                "hero_image": {
+                                                    "url": "/static/generated_images/sample_hero.jpg",
+                                                    "mime_type": "image/jpeg",
+                                                    "size_bytes": 2048,
+                                                    "base64": "..."
+                                                }
                                             }
                                         }, null, 2)}
                                     </pre>
@@ -88,16 +134,13 @@ export default async function WebhookLogsPage({
                                 <TabsContent value="error">
                                     <pre className="block w-full p-3 bg-secondary rounded-md font-mono text-[10px] overflow-x-auto h-[250px]">
                                         {JSON.stringify({
-                                            "secret": "your-secret-key",
-                                            "action": "error",
-                                            "data": {
-                                                "slug": "failed-article-slug",
-                                                "error": "Image generation timeout",
-                                                "details": {
-                                                    "step": "hero_image",
-                                                    "retries": 3
-                                                }
-                                            }
+                                            "status": "error",
+                                            "entry_id": 65,
+                                            "tenant_id": 3,
+                                            "article_id": null,
+                                            "error_type": "ArticleGenerationError",
+                                            "generated_at": "2026-01-22T19:13:39.534793",
+                                            "error_message": "Quality score 20 below threshold 40"
                                         }, null, 2)}
                                     </pre>
                                 </TabsContent>

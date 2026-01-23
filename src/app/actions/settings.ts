@@ -50,3 +50,38 @@ export async function updateSettingsAction(formData: FormData) {
         return { success: false, message: 'Failed to update settings' }
     }
 }
+
+export async function getWebhookSecret() {
+    const setting = await prisma.globalSetting.findUnique({
+        where: { key: 'WEBHOOK_SECRET' }
+    })
+    return setting?.value || process.env.WEBHOOK_SECRET || 'your-secret-key'
+}
+
+export async function regenerateWebhookSecret() {
+    const newSecret = 'wh_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+
+    await prisma.globalSetting.upsert({
+        where: { key: 'WEBHOOK_SECRET' },
+        update: { value: newSecret },
+        create: { key: 'WEBHOOK_SECRET', value: newSecret }
+    })
+
+    revalidatePath('/admin/webhooks')
+    return { success: true, secret: newSecret }
+}
+
+export async function updateWebhookSecret(secret: string) {
+    if (!secret || secret.trim().length === 0) {
+        return { success: false, message: 'Secret cannot be empty' }
+    }
+
+    await prisma.globalSetting.upsert({
+        where: { key: 'WEBHOOK_SECRET' },
+        update: { value: secret },
+        create: { key: 'WEBHOOK_SECRET', value: secret }
+    })
+
+    revalidatePath('/admin/webhooks')
+    return { success: true, message: 'Secret updated successfully' }
+}

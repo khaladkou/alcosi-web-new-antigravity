@@ -2,9 +2,10 @@
 
 import { prisma } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
+import { getWebhookSecret } from '@/app/actions/settings'
+import crypto from 'crypto'
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'your-secret-key'
 
 // 1. Contact Form Test
 export async function runContactTest() {
@@ -133,26 +134,39 @@ export async function runViewTest() {
 
 // 4. Webhook Success Test
 export async function runWebhookSuccessTest() {
+    const WEBHOOK_SECRET = await getWebhookSecret()
     const url = `${BASE_URL}/api/webhooks/content`
     const payload = {
-        secret: WEBHOOK_SECRET,
-        action: 'create',
-        data: {
+        status: 'success',
+        article: {
             slug: 'webhook-test-' + Date.now(),
-            locale: 'en',
             title: '[SYSTEM TEST] Webhook Article',
-            contentHtml: '<p>Created via Webhook Test</p>',
-            metaTitle: 'Webhook Test',
-            status: 'published',
-            publishedAt: new Date().toISOString()
+            content: '<p>Created via Webhook Test</p>',
+            translations: {
+                en: {
+                    language: 'en',
+                    content: '<p>Created via Webhook Test</p>',
+                    title: '[SYSTEM TEST] Webhook Article'
+                }
+            }
         }
     }
+
+    const rawBody = JSON.stringify(payload)
+    const timestamp = Date.now().toString()
+    const signatureInput = `${timestamp}.${rawBody}`
+    const hmac = crypto.createHmac('sha256', WEBHOOK_SECRET)
+    const signature = hmac.update(signatureInput).digest('hex')
 
     try {
         const res = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            headers: {
+                'Content-Type': 'application/json',
+                'X-ContentGen-Timestamp': timestamp,
+                'X-ContentGen-Signature': signature
+            },
+            body: rawBody
         })
 
         if (!res.ok) throw new Error(`Webhook API Error: ${res.status} ${res.statusText}`)
@@ -160,28 +174,36 @@ export async function runWebhookSuccessTest() {
         return { success: true, message: 'Webhook sent successfully (200 OK)' }
     } catch (e: any) {
         const errorMsg = `${e.message} (URL: ${url})`
-        // We can't log to DB easily here if DB write failed, but we return explicit error
         return { success: false, error: errorMsg }
     }
 }
 
 // 5. Webhook Error Test
 export async function runWebhookErrorTest() {
+    const WEBHOOK_SECRET = await getWebhookSecret()
     const url = `${BASE_URL}/api/webhooks/content`
     const payload = {
-        secret: WEBHOOK_SECRET,
-        action: 'error',
-        data: {
-            error: 'Simulated Error from System Test',
-            details: { reason: 'Testing error reporting flow' },
-            slug: 'failed-generation-test'
-        }
+        status: 'error',
+        error_message: 'Simulated Error from System Test',
+        error_type: 'SystemTestError',
+        entry_id: 999
     }
+
+    const rawBody = JSON.stringify(payload)
+    const timestamp = Date.now().toString()
+    const signatureInput = `${timestamp}.${rawBody}`
+    const hmac = crypto.createHmac('sha256', WEBHOOK_SECRET)
+    const signature = hmac.update(signatureInput).digest('hex')
+
     try {
         const res = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            headers: {
+                'Content-Type': 'application/json',
+                'X-ContentGen-Timestamp': timestamp,
+                'X-ContentGen-Signature': signature
+            },
+            body: rawBody
         })
 
         // The API returns 200 even for error reports (it logged it successfully)

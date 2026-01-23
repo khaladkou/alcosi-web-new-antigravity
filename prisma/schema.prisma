@@ -90,7 +90,8 @@ model WebhookLog {
   payload   Json     
   status    Int      
   response  Json?    
-  error     String?  
+  error     String?
+  requestId String?  @unique @map("request_id")
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("webhook_logs")
@@ -179,4 +180,16 @@ model Redirect {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("redirects")
+}
+
+model EventLog {
+  id        String   @id @default(cuid())
+  category  String   // e.g., "webhook"
+  level     String   // "info", "error", "debug"
+  message   String
+  requestId String?  @map("request_id")
+  metadata  Json?    // Stores request ID, partial payload, signatures
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("event_logs")
 }
